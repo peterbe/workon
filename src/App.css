@@ -1,0 +1,86 @@
+/* body {
+    background-image: url(./static/notebook_paper.png);
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-color: rgba(0, 0, 0, 0.5);
+} */
+
+.box h1,
+.box ul li,
+.box input {
+    font-family: "Gochi Hand", cursive;
+    color: rgb(69, 69, 69);
+}
+
+.box h1 {
+    font-size: 500%;
+    text-align: center;
+}
+.box ul li {
+    font-size: 200%;
+    padding-bottom: 30px;
+}
+.box input {
+    font-size: 120%;
+}
+
+.box {
+    margin: 5% 20%;
+}
+.box li p {
+    margin-bottom: 0 !important;
+}
+.box li p.metadata {
+    font-family: Helvetica, sans-serif;
+    font-size: 10px;
+    opacity: 0.3;
+}
+.box li p.metadata:hover {
+    opacity: 1;
+}
+/*
+.box li p.done {
+    text-decoration: line-through;
+} */
+
+.strikeout {
+    /* font-size: 4em; */
+    position: relative;
+}
+.strikeout::after {
+    border-bottom: 0.125em solid rgba(255, 0, 0, 0.5);
+    content: "";
+    left: 0;
+    line-height: 1em;
+    margin-top: calc(0.125em / 2 * -1);
+    position: absolute;
+    right: 0;
+    top: 50%;
+}
+
+.item-enter {
+    opacity: 0.01;
+}
+
+.item-enter.item-enter-active {
+    opacity: 1;
+    transition: opacity 500ms ease-in;
+}
+
+.item-leave {
+    opacity: 1;
+}
+
+.item-leave.item-leave-active {
+    opacity: 0.01;
+    transition: opacity 300ms ease-in;
+}
+
+.item-appear {
+    opacity: 0.01;
+}
+
+.item-appear.item-appear-active {
+    opacity: 1;
+    transition: opacity 0.5s ease-in;
+}
