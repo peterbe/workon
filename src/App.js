@@ -92,61 +92,9 @@ class App extends Component {
   };
 
   render() {
-    const items = this.state.items.map(item => {
-      const added = item.created; // XXX make user-friendly
-      let itemClassName = "";
-      if (item.done) {
-        itemClassName = "strikeout";
-      }
-      return (
-        <li title={`Added ${added}`} key={item.id}>
-          <nav className="level">
-            <div className="level-left">
-              <div className="level-item">
-                <div>
-                  <p className={itemClassName}>{item.text}</p>
-                  <p className="metadata">Added {item.created}</p>
-                </div>
-              </div>
-            </div>
-            <div className="level-right">
-              <div className="level-item">
-                <button
-                  className={
-                    item.done
-                      ? "button is-small is-info"
-                      : "button is-small is-success"
-                  }
-                  title="Mark as done"
-                  style={{ color: "white" }}
-                  onClick={event => {
-                    this.doneItem(item);
-                  }}
-                >
-                  <span role="img" aria-label="Toggle done">
-                    ✔️
-                  </span>
-                </button>
-              </div>
-              <div className="level-item">
-                <button
-                  className="button is-small is-warning"
-                  style={{ color: "white" }}
-                  title="Delete"
-                  onClick={event => {
-                    this.deleteItem(item);
-                  }}
-                >
-                  <span role="img" aria-label="Delete">
-                    🗑
-                  </span>
-                </button>
-              </div>
-            </div>
-          </nav>
-        </li>
-      );
-    });
+    // const items = this.state.items.map(item => {
+    //
+    // });
 
     return (
       <Container>
@@ -186,7 +134,10 @@ class App extends Component {
                 transitionEnter={false}
                 transitionLeave={false}
               >
-                {items}
+                {this.state.items.map(item => (
+                  <Item key={item.id} item={item} />
+                ))}
+                {/* {items} */}
               </ReactCSSTransitionGroup>
             </ul>
           </Content>
@@ -197,3 +148,81 @@ class App extends Component {
 }
 
 export default App;
+
+class Item extends React.PureComponent {
+  state = {
+    displayMetadata: false
+  };
+  render() {
+    const { item } = this.props;
+    const added = item.created; // XXX make user-friendly
+    let itemClassName = "";
+    if (item.done) {
+      itemClassName = "strikeout";
+    }
+    return (
+      <li
+        title={`Added ${added}`}
+        onMouseOver={event => {
+          if (!this.state.displayMetadata) {
+            this.setState({ displayMetadata: true });
+          }
+        }}
+        onMouseOut={event => {
+          if (this.state.displayMetadata) {
+            this.setState({ displayMetadata: false });
+          }
+        }}
+      >
+        <nav className="level">
+          <div className="level-left">
+            <div className="level-item">
+              <div>
+                <p className={itemClassName}>{item.text}</p>
+                {this.state.displayMetadata ? (
+                  <p className="metadata">Added {item.created}</p>
+                ) : (
+                  <p className="metadata">&nbsp;</p>
+                )}
+              </div>
+            </div>
+          </div>
+          <div className="level-right">
+            <div className="level-item">
+              <button
+                className={
+                  item.done
+                    ? "button is-small is-info"
+                    : "button is-small is-success"
+                }
+                title="Mark as done"
+                style={{ color: "white" }}
+                onClick={event => {
+                  this.doneItem(item);
+                }}
+              >
+                <span role="img" aria-label="Toggle done">
+                  ✔️
+                </span>
+              </button>
+            </div>
+            <div className="level-item">
+              <button
+                className="button is-small is-warning"
+                style={{ color: "white" }}
+                title="Delete"
+                onClick={event => {
+                  this.deleteItem(item);
+                }}
+              >
+                <span role="img" aria-label="Delete">
+                  🗑
+                </span>
+              </button>
+            </div>
+          </div>
+        </nav>
+      </li>
+    );
+  }
+}
