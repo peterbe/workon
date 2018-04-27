@@ -196,7 +196,6 @@ class Item extends React.PureComponent {
                     : "button is-small is-success"
                 }
                 title="Mark as done"
-                style={{ color: "white" }}
                 onClick={event => {
                   this.doneItem(item);
                 }}
@@ -209,7 +208,6 @@ class Item extends React.PureComponent {
             <div className="level-item">
               <button
                 className="button is-small is-warning"
-                style={{ color: "white" }}
                 title="Delete"
                 onClick={event => {
                   this.deleteItem(item);
