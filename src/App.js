@@ -2,7 +2,34 @@ import React, { Component } from "react";
 import ReactCSSTransitionGroup from "react-addons-css-transition-group";
 import "bulma/css/bulma.css";
 import "./App.css";
-import { Container, Box, Content } from "bloomer";
+import { Container, Content } from "bloomer";
+
+import {
+  toDate,
+  // isBefore,
+  formatDistance
+  // formatDistanceStrict,
+  // differenceInSeconds,
+  // differenceInMilliseconds,
+} from "date-fns/esm";
+
+const DisplayDate = date => {
+  if (date === null) {
+    throw new Error("date is null");
+  }
+  const dateObj = toDate(date);
+  const now = new Date();
+  return (
+    <span title={dateObj.toString()}>
+      {formatDistance(date, now, { addSuffix: true })}
+    </span>
+  );
+  // if (isBefore(dateObj, now)) {
+  //   return <span title={date}>{formatDistance(date, now)} ago</span>;
+  // } else {
+  //   return <span title={date}>in {formatDistance(date, now)}</span>;
+  // }
+};
 
 class App extends Component {
   state = {
@@ -34,7 +61,7 @@ class App extends Component {
       const items = [
         {
           text,
-          done: false,
+          done: null,
           created: new Date().getTime(),
           modified: new Date().getTime(),
           id: nextId
@@ -55,7 +82,11 @@ class App extends Component {
   doneItem = item => {
     const items = this.state.items.map(thisItem => {
       if (thisItem.id === item.id) {
-        thisItem.done = !thisItem.done;
+        if (thisItem.done) {
+          thisItem.done = null;
+        } else {
+          thisItem.done = new Date().getTime();
+        }
       }
       return thisItem;
     });
@@ -98,7 +129,7 @@ class App extends Component {
 
     return (
       <Container>
-        <Box>
+        <div className="box">
           <Content>
             <h1>Things To Work On</h1>
 
@@ -135,13 +166,18 @@ class App extends Component {
                 transitionLeave={false}
               >
                 {this.state.items.map(item => (
-                  <Item key={item.id} item={item} />
+                  <Item
+                    key={item.id}
+                    item={item}
+                    deleteItem={this.deleteItem}
+                    doneItem={this.doneItem}
+                  />
                 ))}
                 {/* {items} */}
               </ReactCSSTransitionGroup>
             </ul>
           </Content>
-        </Box>
+        </div>
       </Container>
     );
   }
@@ -149,20 +185,20 @@ class App extends Component {
 
 export default App;
 
-class Item extends React.PureComponent {
+class Item extends React.Component {
   state = {
     displayMetadata: false
   };
   render() {
     const { item } = this.props;
-    const added = item.created; // XXX make user-friendly
+    const createdDateObj = toDate(item.created);
     let itemClassName = "";
     if (item.done) {
       itemClassName = "strikeout";
     }
     return (
       <li
-        title={`Added ${added}`}
+        title={`Added ${createdDateObj}`}
         onMouseOver={event => {
           if (!this.state.displayMetadata) {
             this.setState({ displayMetadata: true });
@@ -180,7 +216,7 @@ class Item extends React.PureComponent {
               <div>
                 <p className={itemClassName}>{item.text}</p>
                 {this.state.displayMetadata ? (
-                  <p className="metadata">Added {item.created}</p>
+                  <p className="metadata">Added {DisplayDate(item.created)}</p>
                 ) : (
                   <p className="metadata">&nbsp;</p>
                 )}
@@ -197,7 +233,7 @@ class Item extends React.PureComponent {
                 }
                 title="Mark as done"
                 onClick={event => {
-                  this.doneItem(item);
+                  this.props.doneItem(item);
                 }}
               >
                 <span role="img" aria-label="Toggle done">
@@ -210,7 +246,7 @@ class Item extends React.PureComponent {
                 className="button is-small is-warning"
                 title="Delete"
                 onClick={event => {
-                  this.deleteItem(item);
+                  this.props.deleteItem(item);
                 }}
               >
                 <span role="img" aria-label="Delete">
