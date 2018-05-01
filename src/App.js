@@ -258,6 +258,7 @@ class EditModal extends React.Component {
             this.props.close();
           }}
         />
+
         <div className="modal-content">
           <div className="box">
             <div className="is-clearfix" style={{ marginBottom: 20 }}>
@@ -343,6 +344,49 @@ class Item extends React.Component {
   };
   handleTextEdit = event => {
     this.setState({ newText: event.target.value });
+  };
+
+  _swipe = {};
+  // swiping = false
+  // swiped = false
+  minSwipeDistance = 100;
+
+  handleTouchStart = event => {
+    const touch = event.touches[0];
+    this._swipe.x = touch.clientX;
+    this.refs.textcontainer.style["white-space"] = "nowrap";
+    this.refs.textcontainer.style["overflow"] = "overlay";
+    // console.log(this.refs.textcontainer.style);
+    // console.log(this.refs.textcontainer.style["margin-left"]);
+    // this.refs.textcontainer.style["margin-left"] = "-100px";
+    // console.log("touchstart", event);
+    // this.moved = 0;
+  };
+  handleTouchMove = event => {
+    if (event.changedTouches && event.changedTouches.length) {
+      const touch = event.changedTouches[0];
+      this._swipe.swiping = true;
+      // console.log("X", touch.clientX);
+      // console.log(this.refs.textcontainer);
+      const diff = touch.clientX - this._swipe.x;
+      // console.log("DIFF", diff);
+      this.refs.textcontainer.style["margin-left"] = `${diff}px`;
+    }
+  };
+  handleTouchEnd = event => {
+    // console.log("touchend", event);
+    const touch = event.changedTouches[0];
+    const absX = Math.abs(touch.clientX - this._swipe.x);
+    if (this._swipe.swiping && absX > this.minSwipeDistance) {
+      // this.props.onSwiped && this.props.onSwiped();
+      // this.setState({ swiped: true });
+      // console.log("SWIPED!");
+      this.props.doneItem(this.props.item);
+    }
+    this._swipe = {};
+    this.refs.textcontainer.style["margin-left"] = "0";
+    this.refs.textcontainer.style["white-space"] = "normal";
+    this.refs.textcontainer.style["overflow"] = "unset";
   };
 
   render() {
@@ -447,6 +491,10 @@ class Item extends React.Component {
           onClick={event => {
             this.props.setEditItem(item);
           }}
+          ref="textcontainer"
+          onTouchStart={this.handleTouchStart}
+          onTouchMove={this.handleTouchMove}
+          onTouchEnd={this.handleTouchEnd}
         >
           <Linkify
             properties={{
@@ -476,3 +524,52 @@ class Item extends React.Component {
     );
   }
 }
+
+// class EventComponent extends React.Component {
+//   constructor(props) {
+//     super(props);
+//
+//     this._onTouchStart = this._onTouchStart.bind(this);
+//     this._onTouchMove = this._onTouchMove.bind(this);
+//     this._onTouchEnd = this._onTouchEnd.bind(this);
+//
+//     this.state = { swiped: false };
+//     this._swipe = {};
+//     this.minDistance = 50;
+//   }
+//
+//   _onTouchStart(e) {
+//     const touch = e.touches[0];
+//     this._swipe = { x: touch.clientX };
+//     this.setState({ swiped: false });
+//   }
+//
+//   _onTouchMove(e) {
+//     if (e.changedTouches && e.changedTouches.length) {
+//       const touch = e.changedTouches[0];
+//       this._swipe.swiping = true;
+//     }
+//   }
+//
+//   _onTouchEnd(e) {
+//     const touch = e.changedTouches[0];
+//     const absX = Math.abs(touch.clientX - this._swipe.x);
+//     if (this._swipe.swiping && absX > this.minDistance) {
+//       this.props.onSwiped && this.props.onSwiped();
+//       this.setState({ swiped: true });
+//     }
+//     this._swipe = {};
+//   }
+//
+//   render() {
+//     return (
+//       <div
+//         onTouchStart={this._onTouchStart}
+//         onTouchMove={this._onTouchMove}
+//         onTouchEnd={this._onTouchEnd}
+//       >
+//         {`Component-${this.state.swiped ? "swiped" : ""}`}
+//       </div>
+//     );
+//   }
+// }
