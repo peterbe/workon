@@ -3,6 +3,7 @@ import ReactCSSTransitionGroup from "react-addons-css-transition-group";
 import "bulma/css/bulma.css";
 import "./App.css";
 import { Container, Content } from "bloomer";
+import Linkify from "react-linkify";
 
 import {
   toDate,
@@ -34,7 +35,8 @@ const DisplayDate = date => {
 class App extends Component {
   state = {
     items: [],
-    deletedItem: null
+    deletedItem: null,
+    editItem: null
   };
 
   componentWillUnmount() {
@@ -58,12 +60,13 @@ class App extends Component {
       if (previousIds.length) {
         nextId = Math.max(...previousIds) + 1;
       }
+      const now = new Date();
       const items = [
         {
           text,
           done: null,
-          created: new Date().getTime(),
-          modified: new Date().getTime(),
+          created: now.getTime(),
+          modified: now.getTime(),
           id: nextId
         },
         ...this.state.items
@@ -90,7 +93,7 @@ class App extends Component {
       }
       return thisItem;
     });
-    this.setState({ items }, () => {
+    this.setState({ items, editItem: null }, () => {
       this._persist();
     });
   };
@@ -99,7 +102,7 @@ class App extends Component {
     const items = this.state.items.filter(thisItem => {
       return thisItem.id !== item.id;
     });
-    this.setState({ items, deletedItem: item }, () => {
+    this.setState({ items, deletedItem: item, editItem: null }, () => {
       this._persist();
       if (this.giveupUndoTimeout) {
         window.clearTimeout(this.giveupUndoTimeout);
@@ -122,11 +125,27 @@ class App extends Component {
     });
   };
 
-  render() {
-    // const items = this.state.items.map(item => {
-    //
-    // });
+  editItemText = (text, item) => {
+    const items = this.state.items.map(thisItem => {
+      if (thisItem.id === item.id) {
+        thisItem.text = text;
+        thisItem.modified = new Date().getTime();
+      }
+      return thisItem;
+    });
+    return new Promise(resolve => {
+      this.setState({ items }, () => {
+        this._persist();
+        resolve();
+      });
+    });
+  };
 
+  toggleEditItem = (item = null) => {
+    this.setState({ editItem: item });
+  };
+
+  render() {
     return (
       <Container>
         <div className="box">
@@ -145,6 +164,16 @@ class App extends Component {
                   Undo Delete
                 </button>
               </div>
+            ) : null}
+
+            {this.state.editItem ? (
+              <EditModal
+                item={this.state.editItem}
+                edit={this.editItemText}
+                close={this.toggleEditItem}
+                delete={this.deleteItem}
+                done={this.doneItem}
+              />
             ) : null}
 
             <ul>
@@ -171,6 +200,8 @@ class App extends Component {
                     item={item}
                     deleteItem={this.deleteItem}
                     doneItem={this.doneItem}
+                    editItemText={this.editItemText}
+                    setEditItem={this.toggleEditItem}
                   />
                 ))}
                 {/* {items} */}
@@ -185,38 +216,192 @@ class App extends Component {
 
 export default App;
 
-class Item extends React.Component {
-  state = {
-    displayMetadata: false
+class EditModal extends React.Component {
+  componentDidMount() {
+    this.refs.text.focus();
+    window.addEventListener("keydown", this._escapeKey, true);
+  }
+  componentWillUnmount() {
+    window.removeEventListener("keydown", this._escapeKey, true);
+  }
+
+  _escapeKey = event => {
+    if (event.defaultPrevented) {
+      return; // Do nothing if the event was already processed
+    }
+    if (event.key === "Escape") {
+      this.props.close();
+    }
+  };
+
+  itemFormSubmit = event => {
+    event.preventDefault();
+    const text = this.refs.text.value.trim();
+    if (text) {
+      this.props.edit(text, this.props.item).then(() => {
+        // console.log("EDIT DONE");
+        this.props.close();
+      });
+    } else {
+      this.props.delete(this.props.item);
+      this.props.close();
+    }
+    // this.props.this.props.close();
   };
   render() {
     const { item } = this.props;
+    return (
+      <div className="modal is-active">
+        <div
+          className="modal-background"
+          onClick={event => {
+            this.props.close();
+          }}
+        />
+        <div className="modal-content">
+          <div className="box">
+            <div className="is-clearfix" style={{ marginBottom: 20 }}>
+              <button
+                type="button"
+                className="button is-pulled-right is-danger"
+                onClick={event => {
+                  this.props.delete(item);
+                }}
+              >
+                DELETE
+              </button>
+              <button
+                type="button"
+                className="button is-pulled-left is-success"
+                onClick={event => {
+                  this.props.done(item);
+                }}
+              >
+                <span role="img" aria-label="Toggle done">
+                  ✔️
+                </span>
+                DONE!
+              </button>
+            </div>
+
+            <form onSubmit={this.itemFormSubmit}>
+              <input
+                className="input edit-item"
+                type="text"
+                ref="text"
+                defaultValue={item.text}
+              />
+            </form>
+
+            <p>
+              <b>Added:</b> {DisplayDate(item.created)}
+              <br />
+              {item.created !== item.modified ? (
+                <span>
+                  <b>Edited:</b> {DisplayDate(item.modified)}
+                </span>
+              ) : null}
+            </p>
+
+            <button className="button is-success" onClick={this.itemFormSubmit}>
+              Save
+            </button>
+            <button
+              className="button"
+              onClick={event => {
+                this.props.close();
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+}
+
+class Item extends React.Component {
+  state = {
+    displayMetadata: false,
+    editMode: false,
+    newText: null
+  };
+
+  toggleEditMode = event => {
+    if (this.state.newText === null) {
+      this.setState({ newText: this.props.item.text });
+    }
+    this.setState({ editMode: !this.state.editMode }, () => {
+      if (this.state.editMode) {
+        this.refs.text.focus();
+      } else {
+        // Time to save!
+        this.props.editItemText(this.state.newText, this.props.item);
+      }
+    });
+  };
+  handleTextEdit = event => {
+    this.setState({ newText: event.target.value });
+  };
+
+  render() {
+    const { item } = this.props;
     const createdDateObj = toDate(item.created);
+    const modifiedDateObj = toDate(item.modified);
     let itemClassName = "";
     if (item.done) {
       itemClassName = "strikeout";
     }
     return (
       <li
-        title={`Added ${createdDateObj}`}
-        onMouseOver={event => {
-          if (!this.state.displayMetadata) {
-            this.setState({ displayMetadata: true });
-          }
-        }}
-        onMouseOut={event => {
-          if (this.state.displayMetadata) {
-            this.setState({ displayMetadata: false });
-          }
-        }}
+        title={
+          item.created === item.modified
+            ? `Added ${createdDateObj}`
+            : `Added ${modifiedDateObj}`
+        }
       >
-        <nav className="level">
+        {/* <nav className="level">
           <div className="level-left">
             <div className="level-item">
               <div>
-                <p className={itemClassName}>{item.text}</p>
+                {this.state.editMode ? (
+                  <form onSubmit={this.toggleEditMode}>
+                    <input
+                      type="text"
+                      ref="text"
+                      onChange={this.handleTextEdit}
+                      defaultValue={item.text}
+                      onBlur={this.toggleEditMode}
+                    />
+                  </form>
+                ) : (
+                  <p
+                    className={itemClassName}
+                    title="Click to edit"
+                    onClick={this.toggleEditMode}
+                  >
+                    <Linkify
+                      properties={{
+                        target: "_blank",
+                        onClick: event => {
+                          event.preventDefault();
+                          console.log(event);
+                        }
+                      }}
+                    >
+                      {item.text}
+                    </Linkify>
+                  </p>
+                )}
                 {this.state.displayMetadata ? (
-                  <p className="metadata">Added {DisplayDate(item.created)}</p>
+                  <p className="metadata">
+                    {item.created === item.modified ? (
+                      <span>Added {DisplayDate(item.created)}</span>
+                    ) : (
+                      <span>Modified {DisplayDate(item.modified)}</span>
+                    )}
+                  </p>
                 ) : (
                   <p className="metadata">&nbsp;</p>
                 )}
@@ -255,7 +440,38 @@ class Item extends React.Component {
               </button>
             </div>
           </div>
-        </nav>
+        </nav> */}
+        <p
+          className={itemClassName}
+          title="Click to edit"
+          onClick={event => {
+            this.props.setEditItem(item);
+          }}
+        >
+          <Linkify
+            properties={{
+              target: "_blank",
+              onClick: event => {
+                event.preventDefault();
+                console.log(event);
+              }
+            }}
+          >
+            {item.text}
+          </Linkify>
+        </p>
+
+        {this.state.displayMetadata ? (
+          <p className="metadata">
+            {item.created === item.modified ? (
+              <span>Added {DisplayDate(item.created)}</span>
+            ) : (
+              <span>Modified {DisplayDate(item.modified)}</span>
+            )}
+          </p>
+        ) : (
+          <p className="metadata">&nbsp;</p>
+        )}
       </li>
     );
   }

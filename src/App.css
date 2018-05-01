@@ -8,24 +8,27 @@
 .box h1,
 .box ul li,
 .box input {
-    font-family: "Gochi Hand", cursive;
+    /* font-family: "Gochi Hand", cursive; */
+    /* font-family: "Caveat", cursive; */
+    /* font-family: "Gloria Hallelujah", cursive; */
+    /* font-family: "Handlee", cursive; */
+    font-family: "Neucha", cursive;
     color: rgb(69, 69, 69);
 }
 
 .box h1 {
-    font-size: 500%;
     text-align: center;
 }
 .box ul li {
     font-size: 200%;
-    padding-bottom: 20px;
+    /* padding-bottom: 20px; */
 }
 .box input {
-    font-size: 120%;
+    /* font-size: 120%; */
 }
 
 .box {
-    margin: 5% 20%;
+    /* margin: 5% 20%; */
 }
 .box li p {
     margin-bottom: 0 !important;
@@ -42,6 +45,35 @@
 .box li p.done {
     text-decoration: line-through;
 } */
+
+@media (min-width: 768px) {
+    .box h1 {
+        font-size: 500%;
+        text-align: center;
+    }
+    .box ul li {
+        font-size: 200%;
+        padding-bottom: 20px;
+    }
+    .box input {
+        font-size: 120%;
+    }
+
+    .box {
+        margin: 5% 20%;
+    }
+    .box li p {
+        margin-bottom: 0 !important;
+    }
+    .box li p.metadata {
+        font-family: Helvetica, sans-serif;
+        font-size: 10px;
+        opacity: 0.3;
+    }
+    .box li p.metadata:hover {
+        opacity: 1;
+    }
+}
 
 .strikeout {
     /* font-size: 4em; */
