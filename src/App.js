@@ -1,5 +1,6 @@
-import React, { Component } from "react";
+import React from "react";
 import ReactCSSTransitionGroup from "react-addons-css-transition-group";
+import { observer } from "mobx-react";
 import "bulma/css/bulma.css";
 import "./App.css";
 import { Container, Content } from "bloomer";
@@ -13,6 +14,8 @@ import {
   // differenceInSeconds,
   // differenceInMilliseconds,
 } from "date-fns/esm";
+
+import store from "./Store";
 
 const DisplayDate = date => {
   if (date === null) {
@@ -32,132 +35,113 @@ const DisplayDate = date => {
   // }
 };
 
-class App extends Component {
-  state = {
-    items: [],
-    deletedItem: null,
-    editItem: null
-  };
-
-  componentWillUnmount() {
-    this.dismounted = true;
+class App extends React.Component {
+  render() {
+    return (
+      <Container>
+        <TodoList />
+      </Container>
+    );
   }
+}
 
-  componentDidMount() {
-    this.refs.new.focus();
-    const items = JSON.parse(localStorage.getItem("items") || "[]");
-    if (items.length) {
-      this.setState({ items });
+export default App;
+
+const TodoList = observer(
+  class TodoList extends React.Component {
+    componentWillUnmount() {
+      this.dismounted = true;
     }
-  }
 
-  itemFormSubmit = event => {
-    event.preventDefault();
-    const text = this.refs.new.value.trim();
-    if (text) {
-      const previousIds = this.state.items.map(item => item.id);
-      let nextId = 1;
-      if (previousIds.length) {
-        nextId = Math.max(...previousIds) + 1;
-      }
-      const now = new Date();
-      const items = [
-        {
+    componentDidMount() {
+      this.refs.new.focus();
+      store.obtain();
+    }
+
+    itemFormSubmit = event => {
+      event.preventDefault();
+      const text = this.refs.new.value.trim();
+      if (text) {
+        const previousIds = store.items.map(item => item.id);
+        let nextId = 1;
+        if (previousIds.length) {
+          nextId = Math.max(...previousIds) + 1;
+        }
+        const now = new Date();
+        store.items.unshift({
           text,
           done: null,
           created: now.getTime(),
           modified: now.getTime(),
           id: nextId
-        },
-        ...this.state.items
-      ];
-      this.setState({ items }, () => {
-        this._persist();
+        });
+        store.persist();
         this.refs.new.value = "";
-      });
-    }
-  };
-
-  _persist = () => {
-    localStorage.setItem("items", JSON.stringify(this.state.items));
-  };
-
-  doneItem = item => {
-    const items = this.state.items.map(thisItem => {
-      if (thisItem.id === item.id) {
-        if (thisItem.done) {
-          thisItem.done = null;
-        } else {
-          thisItem.done = new Date().getTime();
-        }
       }
-      return thisItem;
-    });
-    this.setState({ items, editItem: null }, () => {
-      this._persist();
-    });
-  };
+    };
 
-  deleteItem = item => {
-    const items = this.state.items.filter(thisItem => {
-      return thisItem.id !== item.id;
-    });
-    this.setState({ items, deletedItem: item, editItem: null }, () => {
-      this._persist();
+    doneItem = item => {
+      const thisItemIndex = store.items.findIndex(i => i.id === item.id);
+      const thisItem = store.items[thisItemIndex];
+      if (thisItem.done) {
+        thisItem.done = null;
+      } else {
+        thisItem.done = new Date().getTime();
+      }
+      store.items[thisItemIndex] = thisItem;
+      store.editItem = null;
+      store.persist();
+    };
+
+    deleteItem = item => {
+      store.deleteItem = item;
+      store.editItem = null;
+      store.items.remove(item);
+      store.persist();
       if (this.giveupUndoTimeout) {
         window.clearTimeout(this.giveupUndoTimeout);
       }
       this.giveupUndoTimeout = window.setTimeout(() => {
         if (!this.dismounted) {
-          if (this.state.deletedItem) {
-            this.setState({ deletedItem: null });
+          if (store.deletedItem) {
+            store.deletedItem = null;
           }
         }
       }, 10 * 1000);
-    });
-  };
+    };
 
-  undoDelete = () => {
-    const items = [this.state.deletedItem, ...this.state.items];
-    items.sort((a, b) => b.id - a.id);
-    this.setState({ items, deletedItem: null }, () => {
-      this._persist();
-    });
-  };
+    undoDelete = () => {
+      store.items.push(store.deletedItem);
+      store.items.sort((a, b) => b.id - a.id);
+      store.deletedItem = null;
+      store.persist();
+    };
 
-  editItemText = (text, item) => {
-    const items = this.state.items.map(thisItem => {
-      if (thisItem.id === item.id) {
-        thisItem.text = text;
-        thisItem.modified = new Date().getTime();
-      }
-      return thisItem;
-    });
-    return new Promise(resolve => {
-      this.setState({ items }, () => {
-        this._persist();
-        resolve();
-      });
-    });
-  };
+    editItemText = (text, item) => {
+      const thisItemIndex = store.items.findIndex(i => i.id === item.id);
+      const thisItem = store.items[thisItemIndex];
+      thisItem.text = text;
+      thisItem.modified = new Date().getTime();
+      store.items[thisItemIndex] = thisItem;
+      store.persist();
+    };
 
-  toggleEditItem = (item = null) => {
-    this.setState({ editItem: item });
-  };
+    toggleEditItem = (item = null) => {
+      store.editItem = item;
+    };
 
-  render() {
-    return (
-      <Container>
+    render() {
+      return (
         <div className="box">
           <Content>
             <h1>Things To Work On</h1>
 
-            {this.state.deletedItem ? (
+            {store.deletedItem ? (
               <div className="notification is-warning">
                 <button
                   className="delete"
                   onClick={event => {
-                    this.setState({ deletedItem: null });
+                    store.deletedItem = null;
                   }}
                 />
                 <button className="button" onClick={this.undoDelete}>
@@ -166,9 +150,9 @@ class App extends Component {
               </div>
             ) : null}
 
-            {this.state.editItem ? (
+            {store.editItem ? (
               <EditModal
-                item={this.state.editItem}
+                item={store.editItem}
                 edit={this.editItemText}
                 close={this.toggleEditItem}
                 delete={this.deleteItem}
@@ -194,7 +178,7 @@ class App extends Component {
                 transitionEnter={false}
                 transitionLeave={false}
               >
-                {this.state.items.map(item => (
+                {store.items.map(item => (
                   <Item
                     key={item.id}
                     item={item}
@@ -209,12 +193,10 @@ class App extends Component {
             </ul>
           </Content>
         </div>
-      </Container>
-    );
+      );
+    }
   }
-}
-
-export default App;
+);
 
 class EditModal extends React.Component {
   componentDidMount() {
@@ -238,15 +220,12 @@ class EditModal extends React.Component {
     event.preventDefault();
     const text = this.refs.text.value.trim();
     if (text) {
-      this.props.edit(text, this.props.item).then(() => {
-        // console.log("EDIT DONE");
-        this.props.close();
-      });
+      this.props.edit(text, this.props.item);
+      this.props.close();
     } else {
       this.props.delete(this.props.item);
       this.props.close();
     }
-    // this.props.this.props.close();
   };
   render() {
     const { item } = this.props;
@@ -524,52 +503,3 @@ class Item extends React.Component {
     );
   }
 }
-
-// class EventComponent extends React.Component {
-//   constructor(props) {
-//     super(props);
-//
-//     this._onTouchStart = this._onTouchStart.bind(this);
-//     this._onTouchMove = this._onTouchMove.bind(this);
-//     this._onTouchEnd = this._onTouchEnd.bind(this);
-//
-//     this.state = { swiped: false };
-//     this._swipe = {};
-//     this.minDistance = 50;
-//   }
-//
-//   _onTouchStart(e) {
-//     const touch = e.touches[0];
-//     this._swipe = { x: touch.clientX };
-//     this.setState({ swiped: false });
-//   }
-//
-//   _onTouchMove(e) {
-//     if (e.changedTouches && e.changedTouches.length) {
-//       const touch = e.changedTouches[0];
-//       this._swipe.swiping = true;
-//     }
-//   }
-//
-//   _onTouchEnd(e) {
-//     const touch = e.changedTouches[0];
-//     const absX = Math.abs(touch.clientX - this._swipe.x);
-//     if (this._swipe.swiping && absX > this.minDistance) {
-//       this.props.onSwiped && this.props.onSwiped();
-//       this.setState({ swiped: true });
-//     }
-//     this._swipe = {};
-//   }
-//
-//   render() {
-//     return (
-//       <div
-//         onTouchStart={this._onTouchStart}
-//         onTouchMove={this._onTouchMove}
-//         onTouchEnd={this._onTouchEnd}
-//       >
-//         {`Component-${this.state.swiped ? "swiped" : ""}`}
-//       </div>
-//     );
-//   }
-// }
