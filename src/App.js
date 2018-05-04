@@ -9,13 +9,26 @@ import { Container, Content } from "bloomer";
 import {
   toDate,
   // isBefore,
-  formatDistance
-  // formatDistanceStrict,
+  isSameDay,
+  addDays,
+  subDays,
+  startOfDay,
+  formatDistance,
+  formatDistanceStrict
   // differenceInSeconds,
   // differenceInMilliseconds,
 } from "date-fns/esm";
 
 import store from "./Store";
+
+const dateFns = {
+  // format: format,
+  formatDistanceStrict: formatDistanceStrict,
+  isSameDay: isSameDay,
+  startOfDay: startOfDay,
+  addDays: addDays,
+  subDays: subDays
+};
 
 const DisplayDate = date => {
   if (date === null) {
@@ -28,11 +41,6 @@ const DisplayDate = date => {
       {formatDistance(date, now, { addSuffix: true })}
     </span>
   );
-  // if (isBefore(dateObj, now)) {
-  //   return <span title={date}>{formatDistance(date, now)} ago</span>;
-  // } else {
-  //   return <span title={date}>in {formatDistance(date, now)}</span>;
-  // }
 };
 
 class App extends React.Component {
@@ -104,6 +112,7 @@ const TodoList = observer(
       const visibleItems = store.items.filter(item => !item.hidden);
       const countAll = store.items.length;
       const countVisible = visibleItems.length;
+      const allDates = visibleItems.map(item => item.created);
 
       return (
         <div className="box">
@@ -180,6 +189,7 @@ const TodoList = observer(
                   <Item
                     key={item.id}
                     item={item}
+                    allDates={allDates}
                     deleteItem={this.deleteItem}
                     doneItem={this.doneItem}
                     editItemText={this.editItemText}
@@ -459,6 +469,8 @@ const Item = observer(
               : `Added ${modifiedDateObj}`
           }
         >
+          {/* <span className="tag is-white is-pulled-right">Today</span> */}
+          <FriendlyDateTag datetime={item.created} />
           <p
             className={itemClassName}
             title="Click to edit"
@@ -503,3 +515,21 @@ const Item = observer(
     }
   }
 );
+
+const FriendlyDateTag = ({ datetime }) => {
+  const now = new Date();
+  let text;
+  if (dateFns.isSameDay(now, datetime)) {
+    text = "Today";
+  } else if (dateFns.isSameDay(datetime, dateFns.subDays(now, 1))) {
+    text = "Yesterday";
+  } else if (dateFns.isSameDay(datetime, dateFns.addDays(now, 1))) {
+    text = "Tomorrow";
+  } else {
+    text = dateFns.formatDistanceStrict(datetime, dateFns.startOfDay(now), {
+      addSuffix: true
+    });
+  }
+
+  return <span className="tag is-white is-pulled-right">{text}</span>;
+};

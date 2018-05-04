@@ -16,6 +16,7 @@ class TodoStore {
         if (items.length) {
           this.items = items;
         }
+        this.items.replace(this.items.sort((a, b) => b.created - a.created));
       }),
       persist: action(() => {
         localStorage.setItem("items", JSON.stringify(this.items));
@@ -53,7 +54,7 @@ class TodoStore {
       }),
       undoDelete: action(() => {
         this.items.push(this.deletedItem);
-        this.items.sort((a, b) => b.id - a.id);
+        this.items.replace(this.items.sort((a, b) => b.created - a.created));
         this.deletedItem = null;
         this.persist();
       }),
