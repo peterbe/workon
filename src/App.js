@@ -117,10 +117,11 @@ const TodoList = observer(
       store.persist();
     };
 
-    editItemText = (text, item) => {
+    editItemText = (text, notes, item) => {
       const thisItemIndex = store.items.findIndex(i => i.id === item.id);
       const thisItem = store.items[thisItemIndex];
       thisItem.text = text;
+      thisItem.notes = notes;
       thisItem.modified = new Date().getTime();
       store.items[thisItemIndex] = thisItem;
       store.persist();
@@ -199,6 +200,14 @@ const TodoList = observer(
 );
 
 class EditModal extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      saveDisabled: true,
+      editNotes: !!this.props.item.notes
+    };
+  }
+
   componentDidMount() {
     this.refs.text.focus();
     window.addEventListener("keydown", this._escapeKey, true);
@@ -219,8 +228,9 @@ class EditModal extends React.Component {
   itemFormSubmit = event => {
     event.preventDefault();
     const text = this.refs.text.value.trim();
+    const notes = this.refs.notes.value.trim();
     if (text) {
-      this.props.edit(text, this.props.item);
+      this.props.edit(text, notes, this.props.item);
       this.props.close();
     } else {
       this.props.delete(this.props.item);
@@ -269,8 +279,39 @@ class EditModal extends React.Component {
                 className="input edit-item"
                 type="text"
                 ref="text"
+                onChange={event => {
+                  if (this.state.saveDisabled) {
+                    this.setState({ saveDisabled: false });
+                  }
+                }}
                 defaultValue={item.text}
               />
+              {this.state.editNotes ? (
+                <textarea
+                  ref="notes"
+                  className="textarea"
+                  defaultValue={item.notes || ""}
+                  onChange={event => {
+                    if (this.state.saveDisabled) {
+                      this.setState({ saveDisabled: false });
+                    }
+                  }}
+                />
+              ) : (
+                <p>
+                  <button
+                    type="button"
+                    className="button is-small is-text"
+                    onClick={event => {
+                      this.setState({ editNotes: true }, () => {
+                        this.refs.notes.focus();
+                      });
+                    }}
+                  >
+                    Notes?
+                  </button>
+                </p>
+              )}
             </form>
 
             <p>
@@ -283,17 +324,23 @@ class EditModal extends React.Component {
               ) : null}
             </p>
 
-            <button className="button is-success" onClick={this.itemFormSubmit}>
-              Save
-            </button>
-            <button
-              className="button"
-              onClick={event => {
-                this.props.close();
-              }}
-            >
-              Cancel
-            </button>
+            <div className="is-clearfix">
+              <button
+                className="button is-success is-pulled-left"
+                onClick={this.itemFormSubmit}
+                disabled={this.state.saveDisabled}
+              >
+                Save
+              </button>
+              <button
+                className="button is-pulled-right"
+                onClick={event => {
+                  this.props.close();
+                }}
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       </div>
