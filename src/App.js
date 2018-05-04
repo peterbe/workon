@@ -1,10 +1,10 @@
 import React from "react";
-import ReactCSSTransitionGroup from "react-addons-css-transition-group";
+// import ReactCSSTransitionGroup from "react-addons-css-transition-group";
 import { observer } from "mobx-react";
 import "bulma/css/bulma.css";
 import "./App.css";
 import { Container, Content } from "bloomer";
-import Linkify from "react-linkify";
+// import Linkify from "react-linkify";
 
 import {
   toDate,
@@ -62,42 +62,17 @@ const TodoList = observer(
       event.preventDefault();
       const text = this.refs.new.value.trim();
       if (text) {
-        const previousIds = store.items.map(item => item.id);
-        let nextId = 1;
-        if (previousIds.length) {
-          nextId = Math.max(...previousIds) + 1;
-        }
-        const now = new Date();
-        store.items.unshift({
-          text,
-          done: null,
-          created: now.getTime(),
-          modified: now.getTime(),
-          id: nextId
-        });
-        store.persist();
+        store.addItem(text);
         this.refs.new.value = "";
       }
     };
 
     doneItem = item => {
-      const thisItemIndex = store.items.findIndex(i => i.id === item.id);
-      const thisItem = store.items[thisItemIndex];
-      if (thisItem.done) {
-        thisItem.done = null;
-      } else {
-        thisItem.done = new Date().getTime();
-      }
-      store.items[thisItemIndex] = thisItem;
-      store.editItem = null;
-      store.persist();
+      store.doneItem(item);
     };
 
     deleteItem = item => {
-      store.deleteItem = item;
-      store.editItem = null;
-      store.items.remove(item);
-      store.persist();
+      store.deleteItem(item);
       if (this.giveupUndoTimeout) {
         window.clearTimeout(this.giveupUndoTimeout);
       }
@@ -111,20 +86,14 @@ const TodoList = observer(
     };
 
     undoDelete = () => {
-      store.items.push(store.deletedItem);
-      store.items.sort((a, b) => b.id - a.id);
-      store.deletedItem = null;
-      store.persist();
+      store.undoDelete();
+    };
+    undoCleanSlate = event => {
+      store.undoCleanSlate();
     };
 
     editItemText = (text, notes, item) => {
-      const thisItemIndex = store.items.findIndex(i => i.id === item.id);
-      const thisItem = store.items[thisItemIndex];
-      thisItem.text = text;
-      thisItem.notes = notes;
-      thisItem.modified = new Date().getTime();
-      store.items[thisItemIndex] = thisItem;
-      store.persist();
+      store.editItemText(text, notes, item);
     };
 
     toggleEditItem = (item = null) => {
@@ -132,6 +101,10 @@ const TodoList = observer(
     };
 
     render() {
+      const visibleItems = store.items.filter(item => !item.hidden);
+      const countAll = store.items.length;
+      const countVisible = visibleItems.length;
+
       return (
         <div className="box">
           <Content>
@@ -151,6 +124,20 @@ const TodoList = observer(
               </div>
             ) : null}
 
+            {store.cleanSlateDate ? (
+              <div className="notification is-warning">
+                <button
+                  className="delete"
+                  onClick={event => {
+                    store.cleanSlateDate = null;
+                  }}
+                />
+                <button className="button" onClick={this.undoCleanSlate}>
+                  Undo Clean Slate?
+                </button>
+              </div>
+            ) : null}
+
             {store.editItem ? (
               <EditModal
                 item={store.editItem}
@@ -161,25 +148,35 @@ const TodoList = observer(
               />
             ) : null}
 
-            <ul>
-              <li style={{ listStyle: "none" }}>
-                <form onSubmit={this.itemFormSubmit}>
-                  <input
-                    className="input add-item"
-                    type="text"
-                    ref="new"
-                    placeholder="What's next??"
-                  />
-                </form>
-              </li>
-              <ReactCSSTransitionGroup
-                transitionName="items"
-                transitionAppear={true}
-                transitionAppearTimeout={500}
-                transitionEnter={false}
-                transitionLeave={false}
-              >
-                {store.items.map(item => (
+            <div className="list-container">
+              <form onSubmit={this.itemFormSubmit}>
+                <input
+                  className="input add-item"
+                  type="text"
+                  ref="new"
+                  placeholder="What's next??"
+                />
+              </form>
+              <div className="list-container-inner">
+                {/* <ReactCSSTransitionGroup
+                  transitionName="items"
+                  transitionAppear={true}
+                  transitionAppearTimeout={500}
+                  transitionEnter={false}
+                  transitionLeave={false}
+                >
+                  {store.items.map(item => (
+                    <Item
+                      key={item.id}
+                      item={item}
+                      deleteItem={this.deleteItem}
+                      doneItem={this.doneItem}
+                      editItemText={this.editItemText}
+                      setEditItem={this.toggleEditItem}
+                    />
+                  ))}
+                </ReactCSSTransitionGroup> */}
+                {visibleItems.map(item => (
                   <Item
                     key={item.id}
                     item={item}
@@ -189,9 +186,37 @@ const TodoList = observer(
                     setEditItem={this.toggleEditItem}
                   />
                 ))}
-                {/* {items} */}
-              </ReactCSSTransitionGroup>
-            </ul>
+              </div>
+            </div>
+
+            {visibleItems.length ? (
+              <p>
+                <button
+                  className="button is-medium is-fullwidth"
+                  onClick={event => {
+                    store.cleanSlate();
+                  }}
+                >
+                  Clean Slate
+                </button>
+                <br />
+
+                {countAll > countVisible ? (
+                  <button
+                    className="button is-mini is-fullwidth"
+                    onClick={event => {
+                      store.showAllHidden();
+                    }}
+                  >
+                    Show all ({countAll - countVisible}) hidden items
+                  </button>
+                ) : null}
+              </p>
+            ) : (
+              <p className="freshness-blurb">
+                Ah! The freshness of starting afresh!
+              </p>
+            )}
           </Content>
         </div>
       );
@@ -201,7 +226,7 @@ const TodoList = observer(
 
 class EditModal extends React.Component {
   constructor(props) {
-    super(props)
+    super(props);
     this.state = {
       saveDisabled: true,
       editNotes: !!this.props.item.notes
@@ -228,7 +253,8 @@ class EditModal extends React.Component {
   itemFormSubmit = event => {
     event.preventDefault();
     const text = this.refs.text.value.trim();
-    const notes = this.refs.notes.value.trim();
+    const notes =
+      (this.state.editNotes && this.refs.notes.value.trim()) || null;
     if (text) {
       this.props.edit(text, notes, this.props.item);
       this.props.close();
@@ -262,7 +288,11 @@ class EditModal extends React.Component {
               </button>
               <button
                 type="button"
-                className="button is-pulled-left is-success"
+                className={
+                  item.done
+                    ? "button is-pulled-left is-warning"
+                    : "button is-pulled-left is-success"
+                }
                 onClick={event => {
                   this.props.done(item);
                 }}
@@ -270,7 +300,7 @@ class EditModal extends React.Component {
                 <span role="img" aria-label="Toggle done">
                   ✔️
                 </span>
-                DONE!
+                {item.done ? "UNDONE!" : "DONE!"}
               </button>
             </div>
 
@@ -348,205 +378,128 @@ class EditModal extends React.Component {
   }
 }
 
-class Item extends React.Component {
-  state = {
-    displayMetadata: false,
-    editMode: false,
-    newText: null
-  };
+const Item = observer(
+  class Item extends React.Component {
+    state = {
+      displayMetadata: false,
+      editMode: false,
+      newText: null
+    };
 
-  toggleEditMode = event => {
-    if (this.state.newText === null) {
-      this.setState({ newText: this.props.item.text });
-    }
-    this.setState({ editMode: !this.state.editMode }, () => {
-      if (this.state.editMode) {
-        this.refs.text.focus();
-      } else {
-        // Time to save!
-        this.props.editItemText(this.state.newText, this.props.item);
+    toggleEditMode = event => {
+      if (this.state.newText === null) {
+        this.setState({ newText: this.props.item.text });
       }
-    });
-  };
-  handleTextEdit = event => {
-    this.setState({ newText: event.target.value });
-  };
-
-  _swipe = {};
-  // swiping = false
-  // swiped = false
-  minSwipeDistance = 100;
-
-  handleTouchStart = event => {
-    const touch = event.touches[0];
-    this._swipe.x = touch.clientX;
-    this.refs.textcontainer.style["white-space"] = "nowrap";
-    this.refs.textcontainer.style["overflow"] = "overlay";
-    // console.log(this.refs.textcontainer.style);
-    // console.log(this.refs.textcontainer.style["margin-left"]);
-    // this.refs.textcontainer.style["margin-left"] = "-100px";
-    // console.log("touchstart", event);
-    // this.moved = 0;
-  };
-  handleTouchMove = event => {
-    if (event.changedTouches && event.changedTouches.length) {
-      const touch = event.changedTouches[0];
-      this._swipe.swiping = true;
-      // console.log("X", touch.clientX);
-      // console.log(this.refs.textcontainer);
-      const diff = touch.clientX - this._swipe.x;
-      // console.log("DIFF", diff);
-      this.refs.textcontainer.style["margin-left"] = `${diff}px`;
-    }
-  };
-  handleTouchEnd = event => {
-    // console.log("touchend", event);
-    const touch = event.changedTouches[0];
-    const absX = Math.abs(touch.clientX - this._swipe.x);
-    if (this._swipe.swiping && absX > this.minSwipeDistance) {
-      // this.props.onSwiped && this.props.onSwiped();
-      // this.setState({ swiped: true });
-      // console.log("SWIPED!");
-      this.props.doneItem(this.props.item);
-    }
-    this._swipe = {};
-    this.refs.textcontainer.style["margin-left"] = "0";
-    this.refs.textcontainer.style["white-space"] = "normal";
-    this.refs.textcontainer.style["overflow"] = "unset";
-  };
-
-  render() {
-    const { item } = this.props;
-    const createdDateObj = toDate(item.created);
-    const modifiedDateObj = toDate(item.modified);
-    let itemClassName = "";
-    if (item.done) {
-      itemClassName = "strikeout";
-    }
-    return (
-      <li
-        title={
-          item.created === item.modified
-            ? `Added ${createdDateObj}`
-            : `Added ${modifiedDateObj}`
+      this.setState({ editMode: !this.state.editMode }, () => {
+        if (this.state.editMode) {
+          this.refs.text.focus();
+        } else {
+          // Time to save!
+          this.props.editItemText(this.state.newText, this.props.item);
         }
-      >
-        {/* <nav className="level">
-          <div className="level-left">
-            <div className="level-item">
-              <div>
-                {this.state.editMode ? (
-                  <form onSubmit={this.toggleEditMode}>
-                    <input
-                      type="text"
-                      ref="text"
-                      onChange={this.handleTextEdit}
-                      defaultValue={item.text}
-                      onBlur={this.toggleEditMode}
-                    />
-                  </form>
-                ) : (
-                  <p
-                    className={itemClassName}
-                    title="Click to edit"
-                    onClick={this.toggleEditMode}
-                  >
-                    <Linkify
-                      properties={{
-                        target: "_blank",
-                        onClick: event => {
-                          event.preventDefault();
-                          console.log(event);
-                        }
-                      }}
-                    >
-                      {item.text}
-                    </Linkify>
-                  </p>
-                )}
-                {this.state.displayMetadata ? (
-                  <p className="metadata">
-                    {item.created === item.modified ? (
-                      <span>Added {DisplayDate(item.created)}</span>
-                    ) : (
-                      <span>Modified {DisplayDate(item.modified)}</span>
-                    )}
-                  </p>
-                ) : (
-                  <p className="metadata">&nbsp;</p>
-                )}
-              </div>
-            </div>
-          </div>
-          <div className="level-right">
-            <div className="level-item">
-              <button
-                className={
-                  item.done
-                    ? "button is-small is-info"
-                    : "button is-small is-success"
-                }
-                title="Mark as done"
-                onClick={event => {
-                  this.props.doneItem(item);
-                }}
-              >
-                <span role="img" aria-label="Toggle done">
-                  ✔️
-                </span>
-              </button>
-            </div>
-            <div className="level-item">
-              <button
-                className="button is-small is-warning"
-                title="Delete"
-                onClick={event => {
-                  this.props.deleteItem(item);
-                }}
-              >
-                <span role="img" aria-label="Delete">
-                  🗑
-                </span>
-              </button>
-            </div>
-          </div>
-        </nav> */}
-        <p
-          className={itemClassName}
-          title="Click to edit"
-          onClick={event => {
-            this.props.setEditItem(item);
-          }}
-          ref="textcontainer"
-          onTouchStart={this.handleTouchStart}
-          onTouchMove={this.handleTouchMove}
-          onTouchEnd={this.handleTouchEnd}
+      });
+    };
+    handleTextEdit = event => {
+      this.setState({ newText: event.target.value });
+    };
+
+    _swipe = {};
+    minSwipeDistance = 100;
+
+    handleTouchStart = event => {
+      const touch = event.touches[0];
+      this._swipe.x = touch.clientX;
+      this._swipe.y = touch.clientY;
+      this.refs.textcontainer.style["white-space"] = "nowrap";
+      this.refs.textcontainer.style["overflow"] = "overlay";
+    };
+    handleTouchMove = event => {
+      if (event.changedTouches && event.changedTouches.length) {
+        const touch = event.changedTouches[0];
+        const diffX = touch.clientX - this._swipe.x;
+        const diffY = touch.clientY - this._swipe.y;
+
+        // Don't engage in swiping-with-css unless the finger is just "wobbly"
+        if (
+          this._swipe.engaged ||
+          (Math.abs(diffX) > 10 && Math.abs(diffX) > Math.abs(diffY))
+        ) {
+          this._swipe.swiping = true;
+          this._swipe.engaged = true;
+          this.refs.textcontainer.style["margin-left"] = `${diffX}px`;
+        }
+      }
+    };
+    handleTouchEnd = event => {
+      const touch = event.changedTouches[0];
+      const absX = Math.abs(touch.clientX - this._swipe.x);
+      if (this._swipe.swiping && absX > this.minSwipeDistance) {
+        this.props.doneItem(this.props.item);
+      }
+      this._swipe = {};
+      this.refs.textcontainer.style["margin-left"] = "0";
+      this.refs.textcontainer.style["white-space"] = "normal";
+      this.refs.textcontainer.style["overflow"] = "unset";
+    };
+
+    render() {
+      const { item } = this.props;
+      const createdDateObj = toDate(item.created);
+      const modifiedDateObj = toDate(item.modified);
+      let itemClassName = "";
+      if (item.done) {
+        itemClassName = "strikeout";
+      }
+      return (
+        <div
+          className="item"
+          title={
+            item.created === item.modified
+              ? `Added ${createdDateObj}`
+              : `Added ${modifiedDateObj}`
+          }
         >
-          <Linkify
+          <p
+            className={itemClassName}
+            title="Click to edit"
+            style={{ cursor: "pointer" }}
+            onClick={event => {
+              this.props.setEditItem(item);
+            }}
+            ref="textcontainer"
+            onTouchStart={this.handleTouchStart}
+            onTouchMove={this.handleTouchMove}
+            onTouchEnd={this.handleTouchEnd}
+          >
+            {/* <Linkify
             properties={{
-              target: "_blank",
-              onClick: event => {
-                event.preventDefault();
-                console.log(event);
-              }
+              target: "_blank"
+              // onClick: event => {
+              //   event.preventDefault();
+              //   console.log('EVENT',event);
+              //   console.log('TARGET', event.target);
+              // }
             }}
           >
             {item.text}
-          </Linkify>
-        </p>
-
-        {this.state.displayMetadata ? (
-          <p className="metadata">
-            {item.created === item.modified ? (
-              <span>Added {DisplayDate(item.created)}</span>
-            ) : (
-              <span>Modified {DisplayDate(item.modified)}</span>
-            )}
+          </Linkify> */}
+            ‣ {item.text}
           </p>
-        ) : (
-          <p className="metadata">&nbsp;</p>
-        )}
-      </li>
-    );
+          {item.notes ? (
+            <p className="metadata item-notes">
+              <b>notes: </b>
+              {/* <Linkify
+              properties={{
+                target: "_blank"
+              }}
+            >
+              {item.notes}
+            </Linkify> */}
+              {item.notes}
+            </p>
+          ) : null}
+        </div>
+      );
+    }
   }
-}
+);

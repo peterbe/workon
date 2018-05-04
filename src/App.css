@@ -6,113 +6,145 @@
 } */
 
 .box h1,
-.box ul li,
+.box div.item,
+p.freshness-blurb,
 .box input {
-    /* font-family: "Gochi Hand", cursive; */
-    /* font-family: "Caveat", cursive; */
-    /* font-family: "Gloria Hallelujah", cursive; */
-    /* font-family: "Handlee", cursive; */
-    font-family: "Neucha", cursive;
-    color: rgb(69, 69, 69);
+  /* font-family: "Gochi Hand", cursive; */
+  /* font-family: "Caveat", cursive; */
+  /* font-family: "Gloria Hallelujah", cursive; */
+  /* font-family: "Handlee", cursive; */
+  font-family: "Neucha", cursive;
+  color: rgb(69, 69, 69);
 }
 
 .box h1 {
-    text-align: center;
+  text-align: center;
 }
-.box ul li {
-    font-size: 200%;
-    /* padding-bottom: 20px; */
+div.list-container input {
+  font-size: 130%;
+}
+.box div.item {
+  font-size: 160%;
+  padding-top: 15px;
+  padding-bottom: 15px;
+  /* padding-bottom: 20px; */
+  border-bottom: 1px solid #efefef;
 }
 .box input {
-    /* font-size: 120%; */
+  /* font-size: 120%; */
 }
 
 .box {
-    /* margin: 5% 20%; */
+  /* margin: 5% 20%; */
 }
-.box li p {
-    margin-bottom: 0 !important;
+.box div.item p {
+  margin-bottom: 5px;
+  line-height: 1;
 }
-.box li p.metadata {
+.box div.item p.metadata {
+  margin-left: 10px;
+  font-family: Helvetica, sans-serif;
+  font-size: 10px;
+  opacity: 0.3;
+}
+.box div.item p.metadata:hover {
+  opacity: 1;
+}
+
+p.freshness-blurb {
+  text-align: center;
+  font-style: italic;
+  margin: 100px;
+}
+
+@media (min-width: 768px) {
+  .box h1 {
+    font-size: 500%;
+    text-align: center;
+  }
+  .box div.item {
+    font-size: 200%;
+    padding-top: 25px;
+    padding-bottom: 25px;
+  }
+  div.list-container input {
+    font-size: 150%;
+  }
+
+  .box {
+    margin: 5% 20%;
+  }
+  .box div.item p {
+    /* margin-bottom: 0 !important; */
+  }
+  .box div.item p.metadata {
     font-family: Helvetica, sans-serif;
     font-size: 10px;
     opacity: 0.3;
-}
-.box li p.metadata:hover {
+  }
+  .box div.item p.metadata:hover {
     opacity: 1;
-}
-/*
-.box li p.done {
-    text-decoration: line-through;
-} */
-
-@media (min-width: 768px) {
-    .box h1 {
-        font-size: 500%;
-        text-align: center;
-    }
-    .box ul li {
-        font-size: 200%;
-        padding-bottom: 20px;
-    }
-    .box input {
-        font-size: 120%;
-    }
-
-    .box {
-        margin: 5% 20%;
-    }
-    .box li p {
-        margin-bottom: 0 !important;
-    }
-    .box li p.metadata {
-        font-family: Helvetica, sans-serif;
-        font-size: 10px;
-        opacity: 0.3;
-    }
-    .box li p.metadata:hover {
-        opacity: 1;
-    }
+  }
 }
 
 .strikeout {
-    /* font-size: 4em; */
-    position: relative;
+  /* font-size: 4em; */
+  position: relative;
 }
 .strikeout::after {
-    border-bottom: 0.125em solid rgba(255, 0, 0, 0.5);
-    content: "";
-    left: 0;
-    line-height: 1em;
-    margin-top: calc(0.125em / 2 * -1);
-    position: absolute;
-    right: 0;
-    top: 50%;
+  border-bottom: 0.125em solid rgba(255, 0, 0, 0.5);
+  content: "";
+  left: 0;
+  line-height: 1em;
+  margin-top: calc(0.125em / 2 * -1);
+  position: absolute;
+  right: 0;
+  top: 50%;
 }
 
 .item-enter {
-    opacity: 0.01;
+  opacity: 0.01;
 }
 
 .item-enter.item-enter-active {
-    opacity: 1;
-    transition: opacity 500ms ease-in;
+  opacity: 1;
+  transition: opacity 500ms ease-in;
 }
 
 .item-leave {
-    opacity: 1;
+  opacity: 1;
 }
 
 .item-leave.item-leave-active {
-    opacity: 0.01;
-    transition: opacity 300ms ease-in;
+  opacity: 0.01;
+  transition: opacity 300ms ease-in;
 }
 
 .item-appear {
-    opacity: 0.01;
+  opacity: 0.01;
 }
 
 .item-appear.item-appear-active {
-    opacity: 1;
-    transition: opacity 0.5s ease-in;
+  opacity: 1;
+  transition: opacity 0.5s ease-in;
 }
+
+/* div.list-container {
+  height: 420px;
+}
+div.list-container .list-container-inner {
+  max-height: 400px;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  margin-bottom: 100px;
+}
+
+@media (min-width: 768px) {
+  div.list-container {
+    height: 100%;
+  }
+  div.list-container .list-container-inner {
+    max-height: 600px;
+    overflow-y: scroll;
+  }
+} */
