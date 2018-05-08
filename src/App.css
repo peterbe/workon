@@ -102,31 +102,19 @@ p.freshness-blurb {
   top: 50%;
 }
 
-.item-enter {
+.fade-enter {
   opacity: 0.01;
 }
-
-.item-enter.item-enter-active {
+.fade-enter-active {
   opacity: 1;
-  transition: opacity 500ms ease-in;
+  transition: opacity 400ms ease-in;
 }
-
-.item-leave {
+.fade-exit {
   opacity: 1;
 }
-
-.item-leave.item-leave-active {
+.fade-exit-active {
   opacity: 0.01;
-  transition: opacity 300ms ease-in;
-}
-
-.item-appear {
-  opacity: 0.01;
-}
-
-.item-appear.item-appear-active {
-  opacity: 1;
-  transition: opacity 0.5s ease-in;
+  transition: opacity 400ms ease-in;
 }
 
 /* div.list-container {

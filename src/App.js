@@ -1,5 +1,6 @@
 import React from "react";
 // import ReactCSSTransitionGroup from "react-addons-css-transition-group";
+import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { observer } from "mobx-react";
 import "bulma/css/bulma.css";
 import "./App.css";
@@ -165,35 +166,22 @@ const TodoList = observer(
               />
             </form>
             <div className="list-container-inner">
-              {/* <ReactCSSTransitionGroup
-                  transitionName="items"
-                  transitionAppear={true}
-                  transitionAppearTimeout={500}
-                  transitionEnter={false}
-                  transitionLeave={false}
-                >
-                  {store.items.map(item => (
+              <TransitionGroup>
+                {visibleItems.map(item => (
+                  <CSSTransition key={item.id} timeout={400} classNames="fade">
+                    {/* Is this (below) key= needed? */}
                     <Item
                       key={item.id}
                       item={item}
+                      allDates={allDates}
                       deleteItem={this.deleteItem}
                       doneItem={this.doneItem}
                       editItemText={this.editItemText}
                       setEditItem={this.toggleEditItem}
                     />
-                  ))}
-                </ReactCSSTransitionGroup> */}
-              {visibleItems.map(item => (
-                <Item
-                  key={item.id}
-                  item={item}
-                  allDates={allDates}
-                  deleteItem={this.deleteItem}
-                  doneItem={this.doneItem}
-                  editItemText={this.editItemText}
-                  setEditItem={this.toggleEditItem}
-                />
-              ))}
+                  </CSSTransition>
+                ))}
+              </TransitionGroup>
             </div>
           </div>
 
