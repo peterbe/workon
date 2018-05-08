@@ -257,7 +257,7 @@ const TodoList = observer(
             </p>
           ) : (
             <p className="freshness-blurb">
-              Ah! The freshness of starting afresh!
+              Ahhhhh! The freshness of starting afresh!
             </p>
           )}
         </div>

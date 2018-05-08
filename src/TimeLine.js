@@ -15,9 +15,7 @@ import {
 const TimeLine = observer(
   class TimeLine extends React.Component {
     componentDidMount() {
-      this.refs.new.focus();
       document.title = "Things Done";
-      // store.obtain();
     }
 
     componentWillUnmount() {
@@ -26,9 +24,6 @@ const TimeLine = observer(
 
     render() {
       const doneItems = store.items.filter(item => item.done);
-      if (!doneItems.length) {
-        return <h3>No time line possible yet</h3>;
-      }
       const groups = {};
       doneItems.reverse().forEach(item => {
         const date = startOfDay(item.done).getTime();

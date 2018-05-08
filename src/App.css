@@ -18,6 +18,7 @@ p.freshness-blurb,
 }
 
 .box h1 {
+  font-size: 250%;
   text-align: center;
 }
 div.list-container input {
@@ -54,7 +55,7 @@ div.list-container input {
 p.freshness-blurb {
   text-align: center;
   font-style: italic;
-  margin: 100px;
+  margin: 100px 0;
 }
 
 .notification.undo-notification {
@@ -69,7 +70,7 @@ p.freshness-blurb {
 
 @media (min-width: 768px) {
   .box h1 {
-    font-size: 500%;
+    font-size: 400%;
     text-align: center;
   }
   .box div.item {
@@ -80,6 +81,9 @@ p.freshness-blurb {
   div.list-container input {
     font-size: 150%;
   }
+  /* p.freshness-blurb {
+    margin: 100px;
+  } */
 
   .box {
     margin: 20px 150px;

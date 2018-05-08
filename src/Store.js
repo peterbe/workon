@@ -1,4 +1,5 @@
 import { action, extendObservable } from "mobx";
+const uuidv4 = require("uuid/v4");
 
 // configure({ enforceActions: true });
 
@@ -31,18 +32,19 @@ class TodoStore {
         this.persist();
       }),
       addItem: action(text => {
-        const previousIds = this.items.map(item => item.id);
-        let nextId = 1;
-        if (previousIds.length) {
-          nextId = Math.max(...previousIds) + 1;
-        }
+        // // const previousIds = this.items.map(item => item.id);
+        // let nextId = 1;
+        // if (previousIds.length) {
+        //   nextId = Math.max(...previousIds) + 1;
+        // }
+        const newId = uuidv4();
         const now = new Date();
         this.items.unshift({
           text,
           done: null,
           created: now.getTime(),
           modified: now.getTime(),
-          id: nextId
+          id: newId
         });
         this.persist();
       }),
