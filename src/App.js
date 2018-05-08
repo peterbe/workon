@@ -446,9 +446,14 @@ const Item = observer(
     };
     handleTouchEnd = event => {
       const touch = event.changedTouches[0];
-      const absX = Math.abs(touch.clientX - this._swipe.x);
+      const diffX = touch.clientX - this._swipe.x;
+      const absX = Math.abs(diffX);
       if (this._swipe.swiping && absX > this.minSwipeDistance) {
-        this.props.doneItem(this.props.item);
+        if (diffX < 0) {
+          this.props.deleteItem(this.props.item);
+        } else {
+          this.props.doneItem(this.props.item);
+        }
       }
       this._swipe = {};
       this.refs.textcontainer.style["margin-left"] = "0";
@@ -473,7 +478,6 @@ const Item = observer(
               : `Added ${modifiedDateObj}`
           }
         >
-          {/* <span className="tag is-white is-pulled-right">Today</span> */}
           <FriendlyDateTag datetime={item.created} />
           <p
             className={itemClassName}
