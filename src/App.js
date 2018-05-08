@@ -1,35 +1,23 @@
 import React from "react";
-// import ReactCSSTransitionGroup from "react-addons-css-transition-group";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
+import { BrowserRouter as Router, Route, Switch, Link } from "react-router-dom";
 import { observer } from "mobx-react";
 import "bulma/css/bulma.css";
 import "csshake/dist/csshake.css";
 import "./App.css";
+import TimeLine from "./TimeLine";
 // import Linkify from "react-linkify";
 
 import {
   toDate,
-  // isBefore,
   isSameDay,
-  addDays,
   subDays,
   startOfDay,
   formatDistance,
   formatDistanceStrict
-  // differenceInSeconds,
-  // differenceInMilliseconds,
 } from "date-fns/esm";
 
 import store from "./Store";
-
-const dateFns = {
-  // format: format,
-  formatDistanceStrict: formatDistanceStrict,
-  isSameDay: isSameDay,
-  startOfDay: startOfDay,
-  addDays: addDays,
-  subDays: subDays
-};
 
 const DisplayDate = date => {
   if (date === null) {
@@ -44,12 +32,50 @@ const DisplayDate = date => {
   );
 };
 
+const NoMatch = ({ location }) => (
+  <div>
+    <h3>
+      No match for <code>{location.pathname}</code>
+    </h3>
+  </div>
+);
+
 class App extends React.Component {
+  componentDidMount() {
+    store.obtain();
+  }
+
   render() {
     return (
-      <div className="container">
-        <TodoList />
-      </div>
+      <Router>
+        <div className="container">
+          <div className="box">
+            <Switch>
+              <Route path="/" exact component={TodoList} />
+              <Route path="/timeline" exact component={TimeLine} />
+              {/* <Route path="/blogitem/:id" component={EditBlogitem} /> */}
+              <Route component={NoMatch} />
+            </Switch>
+            <nav
+              className="breadcrumb is-centered has-bullet-separator"
+              aria-label="breadcrumbs"
+              style={{
+                marginTop: 30,
+                paddingTop: 10
+              }}
+            >
+              <ul>
+                <li>
+                  <Link to="/">Home</Link>
+                </li>
+                <li>
+                  <Link to="/timeline">Time Line</Link>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </Router>
     );
   }
 }
@@ -64,7 +90,8 @@ const TodoList = observer(
 
     componentDidMount() {
       this.refs.new.focus();
-      store.obtain();
+      document.title = "Things To Work On";
+      // store.obtain();
     }
 
     itemFormSubmit = event => {
@@ -116,7 +143,7 @@ const TodoList = observer(
       const allDates = visibleItems.map(item => item.created);
 
       return (
-        <div className="box content">
+        <div>
           <h1>Things To Work On</h1>
 
           {store.deletedItem ? (
@@ -547,14 +574,14 @@ const Item = observer(
 const FriendlyDateTag = ({ datetime }) => {
   const now = new Date();
   let text;
-  if (dateFns.isSameDay(now, datetime)) {
+  if (isSameDay(now, datetime)) {
     text = "Today";
-  } else if (dateFns.isSameDay(datetime, dateFns.subDays(now, 1))) {
+  } else if (isSameDay(datetime, subDays(now, 1))) {
     text = "Yesterday";
-  } else if (dateFns.isSameDay(datetime, dateFns.addDays(now, 1))) {
-    text = "Tomorrow";
+    // } else if (dateFns.isSameDay(datetime, dateFns.addDays(now, 1))) {
+    //   text = "Tomorrow";
   } else {
-    text = dateFns.formatDistanceStrict(datetime, dateFns.startOfDay(now), {
+    text = formatDistanceStrict(datetime, startOfDay(now), {
       addSuffix: true
     });
   }
