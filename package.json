@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "bulma": "0.7.1",
+    "csshake": "1.5.3",
     "date-fns": "2.0.0-alpha.7",
     "mobx": "4.2.0",
     "mobx-react": "5.1.2",

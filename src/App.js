@@ -3,6 +3,7 @@ import React from "react";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { observer } from "mobx-react";
 import "bulma/css/bulma.css";
+import "csshake/dist/csshake.css";
 import "./App.css";
 // import Linkify from "react-linkify";
 
@@ -441,6 +442,22 @@ const Item = observer(
           this._swipe.swiping = true;
           this._swipe.engaged = true;
           this.refs.textcontainer.style["margin-left"] = `${diffX}px`;
+          if (Math.abs(diffX) > 150) {
+            this.refs.textcontainer.classList.remove("shake-little");
+            this.refs.textcontainer.classList.remove("shake");
+            this.refs.textcontainer.classList.add("shake-hard");
+          } else if (Math.abs(diffX) > 50) {
+            this.refs.textcontainer.classList.remove("shake-little");
+            this.refs.textcontainer.classList.add("shake");
+            this.refs.textcontainer.classList.remove("shake-hard");
+          } else {
+            this.refs.textcontainer.classList.add("shake-little");
+            this.refs.textcontainer.classList.remove("shake");
+            this.refs.textcontainer.classList.remove("shake-hard");
+          }
+          // console.log(diffX);
+
+          // console.log(this.refs.textcontainer.classList);
         }
       }
     };
@@ -459,6 +476,9 @@ const Item = observer(
       this.refs.textcontainer.style["margin-left"] = "0";
       this.refs.textcontainer.style["white-space"] = "normal";
       this.refs.textcontainer.style["overflow"] = "unset";
+      this.refs.textcontainer.classList.remove("shake-little");
+      this.refs.textcontainer.classList.remove("shake");
+      this.refs.textcontainer.classList.remove("shake-hard");
     };
 
     render() {
