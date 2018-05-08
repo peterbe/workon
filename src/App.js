@@ -119,29 +119,48 @@ const TodoList = observer(
           <h1>Things To Work On</h1>
 
           {store.deletedItem ? (
-            <div className="notification is-warning">
-              <button
+            <div className="notification is-warning undo-notification">
+              {/* <button
                 className="delete"
                 onClick={event => {
                   store.deletedItem = null;
                 }}
-              />
-              <button className="button" onClick={this.undoDelete}>
+              /> */}
+              <button className="button is-primary" onClick={this.undoDelete}>
                 Undo Delete
+              </button>{" "}
+              <button
+                className="button is-small"
+                onClick={event => {
+                  store.deletedItem = null;
+                }}
+              >
+                Close
               </button>
             </div>
           ) : null}
 
           {store.cleanSlateDate ? (
-            <div className="notification is-warning">
+            <div className="notification is-warning  undo-notification">
               <button
                 className="delete"
                 onClick={event => {
                   store.cleanSlateDate = null;
                 }}
               />
-              <button className="button" onClick={this.undoCleanSlate}>
+              <button
+                className="button is-primary"
+                onClick={this.undoCleanSlate}
+              >
                 Undo Clean Slate?
+              </button>{" "}
+              <button
+                className="button is-small"
+                onClick={event => {
+                  store.cleanSlateDate = null;
+                }}
+              >
+                Close
               </button>
             </div>
           ) : null}
@@ -168,7 +187,7 @@ const TodoList = observer(
             <div className="list-container-inner">
               <TransitionGroup>
                 {visibleItems.map(item => (
-                  <CSSTransition key={item.id} timeout={400} classNames="fade">
+                  <CSSTransition key={item.id} timeout={300} classNames="fade">
                     {/* Is this (below) key= needed? */}
                     <Item
                       key={item.id}

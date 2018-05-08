@@ -57,6 +57,16 @@ p.freshness-blurb {
   margin: 100px;
 }
 
+.notification.undo-notification {
+  position: absolute;
+  top: 12px;
+  opacity: 0.95;
+  padding: 0.7rem;
+}
+/* .notification.undo-notification button {
+  opacity: 0.95;
+} */
+
 @media (min-width: 768px) {
   .box h1 {
     font-size: 500%;
@@ -107,14 +117,14 @@ p.freshness-blurb {
 }
 .fade-enter-active {
   opacity: 1;
-  transition: opacity 400ms ease-in;
+  transition: opacity 300ms ease-in;
 }
 .fade-exit {
   opacity: 1;
 }
 .fade-exit-active {
   opacity: 0.01;
-  transition: opacity 400ms ease-in;
+  transition: opacity 300ms ease-in;
 }
 
 /* div.list-container {
