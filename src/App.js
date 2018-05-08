@@ -3,7 +3,6 @@ import React from "react";
 import { observer } from "mobx-react";
 import "bulma/css/bulma.css";
 import "./App.css";
-import { Container, Content } from "bloomer";
 // import Linkify from "react-linkify";
 
 import {
@@ -46,9 +45,9 @@ const DisplayDate = date => {
 class App extends React.Component {
   render() {
     return (
-      <Container>
+      <div className="container">
         <TodoList />
-      </Container>
+      </div>
     );
   }
 }
@@ -115,59 +114,58 @@ const TodoList = observer(
       const allDates = visibleItems.map(item => item.created);
 
       return (
-        <div className="box">
-          <Content>
-            <h1>Things To Work On</h1>
+        <div className="box content">
+          <h1>Things To Work On</h1>
 
-            {store.deletedItem ? (
-              <div className="notification is-warning">
-                <button
-                  className="delete"
-                  onClick={event => {
-                    store.deletedItem = null;
-                  }}
-                />
-                <button className="button" onClick={this.undoDelete}>
-                  Undo Delete
-                </button>
-              </div>
-            ) : null}
-
-            {store.cleanSlateDate ? (
-              <div className="notification is-warning">
-                <button
-                  className="delete"
-                  onClick={event => {
-                    store.cleanSlateDate = null;
-                  }}
-                />
-                <button className="button" onClick={this.undoCleanSlate}>
-                  Undo Clean Slate?
-                </button>
-              </div>
-            ) : null}
-
-            {store.editItem ? (
-              <EditModal
-                item={store.editItem}
-                edit={this.editItemText}
-                close={this.toggleEditItem}
-                delete={this.deleteItem}
-                done={this.doneItem}
+          {store.deletedItem ? (
+            <div className="notification is-warning">
+              <button
+                className="delete"
+                onClick={event => {
+                  store.deletedItem = null;
+                }}
               />
-            ) : null}
+              <button className="button" onClick={this.undoDelete}>
+                Undo Delete
+              </button>
+            </div>
+          ) : null}
 
-            <div className="list-container">
-              <form onSubmit={this.itemFormSubmit}>
-                <input
-                  className="input add-item"
-                  type="text"
-                  ref="new"
-                  placeholder="What's next??"
-                />
-              </form>
-              <div className="list-container-inner">
-                {/* <ReactCSSTransitionGroup
+          {store.cleanSlateDate ? (
+            <div className="notification is-warning">
+              <button
+                className="delete"
+                onClick={event => {
+                  store.cleanSlateDate = null;
+                }}
+              />
+              <button className="button" onClick={this.undoCleanSlate}>
+                Undo Clean Slate?
+              </button>
+            </div>
+          ) : null}
+
+          {store.editItem ? (
+            <EditModal
+              item={store.editItem}
+              edit={this.editItemText}
+              close={this.toggleEditItem}
+              delete={this.deleteItem}
+              done={this.doneItem}
+            />
+          ) : null}
+
+          <div className="list-container">
+            <form onSubmit={this.itemFormSubmit}>
+              <input
+                className="input add-item"
+                type="text"
+                ref="new"
+                placeholder="What's next??"
+              />
+            </form>
+            <div className="list-container-inner">
+              {/* <ReactCSSTransitionGroup
                   transitionName="items"
                   transitionAppear={true}
                   transitionAppearTimeout={500}
@@ -185,49 +183,48 @@ const TodoList = observer(
                     />
                   ))}
                 </ReactCSSTransitionGroup> */}
-                {visibleItems.map(item => (
-                  <Item
-                    key={item.id}
-                    item={item}
-                    allDates={allDates}
-                    deleteItem={this.deleteItem}
-                    doneItem={this.doneItem}
-                    editItemText={this.editItemText}
-                    setEditItem={this.toggleEditItem}
-                  />
-                ))}
-              </div>
+              {visibleItems.map(item => (
+                <Item
+                  key={item.id}
+                  item={item}
+                  allDates={allDates}
+                  deleteItem={this.deleteItem}
+                  doneItem={this.doneItem}
+                  editItemText={this.editItemText}
+                  setEditItem={this.toggleEditItem}
+                />
+              ))}
             </div>
+          </div>
 
-            {visibleItems.length ? (
-              <p>
+          {visibleItems.length ? (
+            <p>
+              <button
+                className="button is-medium is-fullwidth"
+                onClick={event => {
+                  store.cleanSlate();
+                }}
+              >
+                Clean Slate
+              </button>
+              <br />
+
+              {countAll > countVisible ? (
                 <button
-                  className="button is-medium is-fullwidth"
+                  className="button is-mini is-fullwidth"
                   onClick={event => {
-                    store.cleanSlate();
+                    store.showAllHidden();
                   }}
                 >
-                  Clean Slate
+                  Show all ({countAll - countVisible}) hidden items
                 </button>
-                <br />
-
-                {countAll > countVisible ? (
-                  <button
-                    className="button is-mini is-fullwidth"
-                    onClick={event => {
-                      store.showAllHidden();
-                    }}
-                  >
-                    Show all ({countAll - countVisible}) hidden items
-                  </button>
-                ) : null}
-              </p>
-            ) : (
-              <p className="freshness-blurb">
-                Ah! The freshness of starting afresh!
-              </p>
-            )}
-          </Content>
+              ) : null}
+            </p>
+          ) : (
+            <p className="freshness-blurb">
+              Ah! The freshness of starting afresh!
+            </p>
+          )}
         </div>
       );
     }
