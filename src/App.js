@@ -242,24 +242,25 @@ const TodoList = observer(
               >
                 Clean Slate
               </button>
-              <br />
-
-              {countAll > countVisible ? (
-                <button
-                  className="button is-mini is-fullwidth"
-                  onClick={event => {
-                    store.showAllHidden();
-                  }}
-                >
-                  Show all ({countAll - countVisible}) hidden items
-                </button>
-              ) : null}
             </p>
           ) : (
             <p className="freshness-blurb">
               Ahhhhh! The freshness of starting afresh!
             </p>
           )}
+
+          {countAll > countVisible ? (
+            <p>
+              <button
+                className="button is-mini is-fullwidth"
+                onClick={event => {
+                  store.showAllHidden();
+                }}
+              >
+                Show all ({countAll - countVisible}) hidden items
+              </button>
+            </p>
+          ) : null}
         </div>
       );
     }
