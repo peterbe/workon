@@ -4,8 +4,9 @@ import { BrowserRouter as Router, Route, Switch, Link } from "react-router-dom";
 import { observer } from "mobx-react";
 import "bulma/css/bulma.css";
 import "csshake/dist/csshake.css";
-import "./App.css";
 import TimeLine from "./TimeLine";
+import Auth from "./Auth";
+import "./App.css";
 import "./Pyro.css";
 // import Linkify from "react-linkify";
 
@@ -43,7 +44,7 @@ const NoMatch = ({ location }) => (
 
 class App extends React.Component {
   componentDidMount() {
-    store.obtain();
+    store.todos.obtain();
   }
 
   render() {
@@ -54,6 +55,7 @@ class App extends React.Component {
             <Switch>
               <Route path="/" exact component={TodoList} />
               <Route path="/timeline" exact component={TimeLine} />
+              <Route path="/auth" exact component={Auth} />
               {/* <Route path="/blogitem/:id" component={EditBlogitem} /> */}
               <Route component={NoMatch} />
             </Switch>
@@ -71,6 +73,9 @@ class App extends React.Component {
                 </li>
                 <li>
                   <Link to="/timeline">Time Line</Link>
+                </li>
+                <li>
+                  <Link to="/auth">Authentication</Link>
                 </li>
               </ul>
             </nav>
@@ -97,14 +102,14 @@ const TodoList = observer(
     componentDidMount() {
       this.refs.new.focus();
       document.title = "Things To Work On";
-      // store.obtain();
+      // store.todos.obtain();
     }
 
     itemFormSubmit = event => {
       event.preventDefault();
       const text = this.refs.new.value.trim();
       if (text) {
-        store.addItem(text);
+        store.todos.addItem(text);
         this.refs.new.value = "";
       }
     };
@@ -121,39 +126,39 @@ const TodoList = observer(
 
     doneItem = item => {
       const wasNotDone = !item.done;
-      store.doneItem(item);
+      store.todos.doneItem(item);
       if (wasNotDone) {
         this.showPyrosTemporarily();
       }
     };
 
     deleteItem = item => {
-      store.deleteItem(item);
+      store.todos.deleteItem(item);
       if (this.giveupUndoTimeout) {
         window.clearTimeout(this.giveupUndoTimeout);
       }
       this.giveupUndoTimeout = window.setTimeout(() => {
         if (!this.dismounted) {
-          if (store.deletedItem) {
-            store.deletedItem = null;
+          if (store.todos.deletedItem) {
+            store.todos.deletedItem = null;
           }
         }
       }, 10 * 1000);
     };
 
     undoDelete = () => {
-      store.undoDelete();
+      store.todos.undoDelete();
     };
     undoCleanSlate = event => {
-      store.undoCleanSlate();
+      store.todos.undoCleanSlate();
     };
 
     editItemText = (text, notes, item) => {
-      store.editItemText(text, notes, item);
+      store.todos.editItemText(text, notes, item);
     };
 
     toggleEditItem = (item = null) => {
-      store.editItem = item;
+      store.todos.editItem = item;
     };
 
     toggleHideDone = event => {
@@ -163,7 +168,7 @@ const TodoList = observer(
     };
 
     render() {
-      const visibleItems = store.items.filter(item => !item.hidden);
+      const visibleItems = store.todos.items.filter(item => !item.hidden);
       const showItems = visibleItems.filter(item => {
         if (this.state.hideDone) {
           return !item.done;
@@ -171,7 +176,7 @@ const TodoList = observer(
         return true;
       });
       const countDone = visibleItems.filter(item => item.done).length;
-      const countAll = store.items.length;
+      const countAll = store.todos.items.length;
       const countVisible = visibleItems.length;
       const allDates = visibleItems.map(item => item.created);
 
@@ -186,12 +191,12 @@ const TodoList = observer(
             </div>
           ) : null}
 
-          {store.deletedItem ? (
+          {store.todos.deletedItem ? (
             <div className="notification is-warning undo-notification">
               {/* <button
                 className="delete"
                 onClick={event => {
-                  store.deletedItem = null;
+                  store.todos.deletedItem = null;
                 }}
               /> */}
               <button className="button is-primary" onClick={this.undoDelete}>
@@ -200,7 +205,7 @@ const TodoList = observer(
               <button
                 className="button is-small"
                 onClick={event => {
-                  store.deletedItem = null;
+                  store.todos.deletedItem = null;
                 }}
               >
                 Close
@@ -208,12 +213,12 @@ const TodoList = observer(
             </div>
           ) : null}
 
-          {store.cleanSlateDate ? (
+          {store.todos.cleanSlateDate ? (
             <div className="notification is-warning  undo-notification">
               <button
                 className="delete"
                 onClick={event => {
-                  store.cleanSlateDate = null;
+                  store.todos.cleanSlateDate = null;
                 }}
               />
               <button
@@ -225,7 +230,7 @@ const TodoList = observer(
               <button
                 className="button is-small"
                 onClick={event => {
-                  store.cleanSlateDate = null;
+                  store.todos.cleanSlateDate = null;
                 }}
               >
                 Close
@@ -233,9 +238,9 @@ const TodoList = observer(
             </div>
           ) : null}
 
-          {store.editItem ? (
+          {store.todos.editItem ? (
             <EditModal
-              item={store.editItem}
+              item={store.todos.editItem}
               edit={this.editItemText}
               close={this.toggleEditItem}
               delete={this.deleteItem}
@@ -278,7 +283,7 @@ const TodoList = observer(
                 <button
                   className="button is-info is-fullwidth"
                   onClick={event => {
-                    store.cleanSlate();
+                    store.todos.cleanSlate();
                   }}
                 >
                   Clean Slate
@@ -306,7 +311,7 @@ const TodoList = observer(
               <button
                 className="button is-mini is-fullwidth"
                 onClick={event => {
-                  store.showAllHidden();
+                  store.todos.showAllHidden();
                 }}
               >
                 Show all ({countAll - countVisible}) hidden items

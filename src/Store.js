@@ -109,9 +109,25 @@ class TodoStore {
   }
 }
 
+class UserStore {
+  constructor(rootStore) {
+    this.rootStore = rootStore;
+    extendObservable(this, {
+      userInfo: null
+      // deletedItem: null,
+    });
+  }
+}
+
+class RootStore {
+  constructor() {
+    this.user = new UserStore(this);
+    this.todos = new TodoStore(this);
+  }
+}
 // import { decorate, observable } from "mobx"
 
-// const store = (window.store = new RootStore());
-const store = (window.store = new TodoStore());
+const store = (window.store = new RootStore());
+// const store = (window.store = new TodoStore());
 
 export default store;
