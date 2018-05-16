@@ -1,0 +1,2 @@
+kinto[postgresql]
+kinto-wizard

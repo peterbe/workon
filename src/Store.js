@@ -22,6 +22,18 @@ class TodoStore {
       persist: action(() => {
         localStorage.setItem("items", JSON.stringify(this.items));
       }),
+      remoteSync: action(async (kintoClient, userInfo) => {
+        console.log(userInfo);
+        // const { data } = await kintoClient
+        //   .bucket("todos")
+        //   .collection(userInfo.sub)
+        //   .listRecords();
+        const { data } = await kintoClient
+          .bucket("workon")
+          .collection("todos")
+          .listRecords();
+        console.log("DATA", data);
+      }),
       editItemText: action((text, notes, item) => {
         const thisItemIndex = this.items.findIndex(i => i.id === item.id);
         const thisItem = this.items[thisItemIndex];

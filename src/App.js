@@ -2,12 +2,14 @@ import React from "react";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { BrowserRouter as Router, Route, Switch, Link } from "react-router-dom";
 import { observer } from "mobx-react";
+import KintoClient from "kinto-http";
 import "bulma/css/bulma.css";
 import "csshake/dist/csshake.css";
 import TimeLine from "./TimeLine";
 import Auth from "./Auth";
 import "./App.css";
 import "./Pyro.css";
+import { OpenIDClient, KINTO_URL } from "./OpenIDClient";
 // import Linkify from "react-linkify";
 
 import {
@@ -20,6 +22,9 @@ import {
 } from "date-fns/esm";
 
 import store from "./Store";
+
+// const BUCKET = "default";
+// const COLLECTION = 'oidc-demo';
 
 const DisplayDate = date => {
   if (date === null) {
@@ -45,7 +50,51 @@ const NoMatch = ({ location }) => (
 class App extends React.Component {
   componentDidMount() {
     store.todos.obtain();
+    this.authenticate();
   }
+
+  authenticate() {
+    this.kintoClient = new KintoClient(KINTO_URL);
+    // this.kintoClient.fetchServerInfo().then(data => {
+    //   // console.log("DATA", data);
+    //   this.providers = data.capabilities.openid.providers;
+    //   this.setState({ kintoInfo: data });
+    // });
+    this.authClient = new OpenIDClient();
+    const authResult = this.authClient.authenticate();
+    if (window.location.hash) {
+      console.warn(`Removing location hash '${window.location.hash}'`);
+      window.location.hash = "";
+    }
+
+    if (authResult) {
+      // console.log("AuthResult", authResult);
+      // const { provider, accessToken, tokenType, idTokenPayload } = authResult;
+      const { provider, accessToken, tokenType } = authResult;
+
+      // Set access token for requests to Kinto.
+      this.kintoClient.setHeaders({
+        Authorization: `${tokenType} ${accessToken}`
+      });
+      this.authClient
+        .userInfo(this.kintoClient, provider, accessToken)
+        .then(userInfo => {
+          // console.log("userInfo", userInfo);
+          store.user.userInfo = userInfo;
+          store.todos.remoteSync(this.kintoClient, userInfo);
+        });
+    }
+  }
+
+  logIn = event => {
+    // console.log("WORK HARDER");
+    this.authClient.authorize(this.providers[0]);
+  };
+
+  logOut = event => {
+    this.authClient.logout();
+    // this.setState({ loggedIn: false });
+  };
 
   render() {
     return (
@@ -55,7 +104,13 @@ class App extends React.Component {
             <Switch>
               <Route path="/" exact component={TodoList} />
               <Route path="/timeline" exact component={TimeLine} />
-              <Route path="/auth" exact component={Auth} />
+              <Route
+                path="/auth"
+                exact
+                render={props => (
+                  <Auth {...props} logIn={this.logIn} logOut={this.logOut} />
+                )}
+              />
               {/* <Route path="/blogitem/:id" component={EditBlogitem} /> */}
               <Route component={NoMatch} />
             </Switch>
