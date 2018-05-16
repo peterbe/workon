@@ -47,99 +47,120 @@ const NoMatch = ({ location }) => (
   </div>
 );
 
-class App extends React.Component {
-  componentDidMount() {
-    store.todos.obtain();
-    this.authenticate();
-  }
-
-  authenticate() {
-    this.kintoClient = new KintoClient(KINTO_URL);
-    // this.kintoClient.fetchServerInfo().then(data => {
-    //   // console.log("DATA", data);
-    //   this.providers = data.capabilities.openid.providers;
-    //   this.setState({ kintoInfo: data });
-    // });
-    this.authClient = new OpenIDClient();
-    const authResult = this.authClient.authenticate();
-    if (window.location.hash) {
-      console.warn(`Removing location hash '${window.location.hash}'`);
-      window.location.hash = "";
+const App = observer(
+  class App extends React.Component {
+    componentDidMount() {
+      store.todos.obtain();
+      this.authenticate();
     }
 
-    if (authResult) {
-      // console.log("AuthResult", authResult);
-      // const { provider, accessToken, tokenType, idTokenPayload } = authResult;
-      const { provider, accessToken, tokenType } = authResult;
+    authenticate() {
+      this.kintoClient = new KintoClient(KINTO_URL);
+      // this.kintoClient.fetchServerInfo().then(data => {
+      //   // console.log("DATA", data);
+      //   this.providers = data.capabilities.openid.providers;
+      //   this.setState({ kintoInfo: data });
+      // });
+      this.authClient = new OpenIDClient();
+      const authResult = this.authClient.authenticate();
+      if (window.location.hash) {
+        console.warn(`Removing location hash '${window.location.hash}'`);
+        window.location.hash = "";
+      }
 
-      // Set access token for requests to Kinto.
-      this.kintoClient.setHeaders({
-        Authorization: `${tokenType} ${accessToken}`
-      });
-      this.authClient
-        .userInfo(this.kintoClient, provider, accessToken)
-        .then(userInfo => {
-          // console.log("userInfo", userInfo);
-          store.user.userInfo = userInfo;
-          store.todos.remoteSync(this.kintoClient, userInfo);
+      if (authResult) {
+        // console.log("AuthResult", authResult);
+        // const { provider, accessToken, tokenType, idTokenPayload } = authResult;
+        const { provider, accessToken, tokenType } = authResult;
+
+        // Set access token for requests to Kinto.
+        this.kintoClient.setHeaders({
+          Authorization: `${tokenType} ${accessToken}`
         });
+        this.authClient
+          .userInfo(this.kintoClient, provider, accessToken)
+          .then(userInfo => {
+            // console.log("userInfo", userInfo);
+            store.user.userInfo = userInfo;
+            store.todos.remoteSync(this.kintoClient, userInfo);
+          });
+      } else {
+        // We're not already logged in. Query the kinto server to extract
+        // the list of possible providers.
+        this.kintoClient.fetchServerInfo().then(data => {
+          this.providers = data.capabilities.openid.providers;
+        });
+      }
+    }
+
+    logIn = event => {
+      // console.log("WORK HARDER");
+      this.authClient.authorize(this.providers[0]);
+    };
+
+    logOut = event => {
+      this.authClient.logout();
+      // this.setState({ loggedIn: false });
+    };
+
+    render() {
+      return (
+        <Router>
+          <div className="container">
+            <div className="box">
+              {store.user.userInfo ? (
+                <Link to="auth">
+                  <figure
+                    className="image is-32x32 is-pulled-right avatar"
+                    title={`Logged in as ${store.user.userInfo.name}, ${
+                      store.user.userInfo.email
+                    }`}
+                  >
+                    <img src={store.user.userInfo.picture} alt="Avatar" />
+                  </figure>
+                </Link>
+              ) : null}
+
+              <Switch>
+                <Route path="/" exact component={TodoList} />
+                <Route path="/timeline" exact component={TimeLine} />
+                <Route
+                  path="/auth"
+                  exact
+                  render={props => (
+                    <Auth {...props} logIn={this.logIn} logOut={this.logOut} />
+                  )}
+                />
+                {/* <Route path="/blogitem/:id" component={EditBlogitem} /> */}
+                <Route component={NoMatch} />
+              </Switch>
+              <nav
+                className="breadcrumb is-centered has-bullet-separator"
+                aria-label="breadcrumbs"
+                style={{
+                  marginTop: 30,
+                  paddingTop: 10
+                }}
+              >
+                <ul>
+                  <li>
+                    <Link to="/">Home</Link>
+                  </li>
+                  <li>
+                    <Link to="/timeline">Time Line</Link>
+                  </li>
+                  <li>
+                    <Link to="/auth">Authentication</Link>
+                  </li>
+                </ul>
+              </nav>
+            </div>
+          </div>
+        </Router>
+      );
     }
   }
-
-  logIn = event => {
-    // console.log("WORK HARDER");
-    this.authClient.authorize(this.providers[0]);
-  };
-
-  logOut = event => {
-    this.authClient.logout();
-    // this.setState({ loggedIn: false });
-  };
-
-  render() {
-    return (
-      <Router>
-        <div className="container">
-          <div className="box">
-            <Switch>
-              <Route path="/" exact component={TodoList} />
-              <Route path="/timeline" exact component={TimeLine} />
-              <Route
-                path="/auth"
-                exact
-                render={props => (
-                  <Auth {...props} logIn={this.logIn} logOut={this.logOut} />
-                )}
-              />
-              {/* <Route path="/blogitem/:id" component={EditBlogitem} /> */}
-              <Route component={NoMatch} />
-            </Switch>
-            <nav
-              className="breadcrumb is-centered has-bullet-separator"
-              aria-label="breadcrumbs"
-              style={{
-                marginTop: 30,
-                paddingTop: 10
-              }}
-            >
-              <ul>
-                <li>
-                  <Link to="/">Home</Link>
-                </li>
-                <li>
-                  <Link to="/timeline">Time Line</Link>
-                </li>
-                <li>
-                  <Link to="/auth">Authentication</Link>
-                </li>
-              </ul>
-            </nav>
-          </div>
-        </div>
-      </Router>
-    );
-  }
-}
+);
 
 export default App;
 

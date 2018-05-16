@@ -68,6 +68,10 @@ p.freshness-blurb {
   opacity: 0.95;
 } */
 
+figure.avatar img {
+  border-radius: 50%;
+}
+
 @media (min-width: 768px) {
   .box h1 {
     font-size: 400%;

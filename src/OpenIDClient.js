@@ -1,6 +1,6 @@
 export const KINTO_URL =
   process.env.REACT_APP_KINTO_URL || "http://localhost:8888/v1";
-const SCOPES = "openid email";
+const SCOPES = "openid email profile";
 
 export class OpenIDClient {
   async authorize(provider) {
@@ -27,22 +27,24 @@ export class OpenIDClient {
     return await resp.json();
   }
 
+  parseJwt(token) {
+    var base64Url = token.split(".")[1];
+    var base64 = base64Url.replace("-", "+").replace("_", "/");
+    return JSON.parse(window.atob(base64));
+  }
+
   parseHash() {
-    const hash = decodeURIComponent(window.location.hash);
-    // Parse tokens from location bar.
-    const hashExtract = /provider=(\w+)&tokens=([.\s\S]*)/m.exec(hash);
-    if (hashExtract) {
-      const provider = hashExtract[1];
-      const tokens = hashExtract[2];
+    const qsh = window.location.hash.slice(1, window.location.hash.length);
+    const qs = new URLSearchParams(qsh);
+
+    if (qs.get("tokens") && qs.get("provider")) {
+      const provider = qs.get("provider");
+      const tokens = qs.get("tokens");
       const parsed = JSON.parse(tokens);
-      // If parsed info is not access token, raise.
       if (!parsed.access_token) {
         throw new Error(`Authentication error: ${tokens}`);
       }
-
-      const idTokenPayload = JSON.parse(
-        window.atob(parsed.id_token.split(".")[1])
-      );
+      const idTokenPayload = this.parseJwt(tokens);
       return {
         provider,
         expiresIn: parsed.expires_in,
@@ -57,13 +59,7 @@ export class OpenIDClient {
 
   authenticate() {
     let authResult = null;
-    try {
-      authResult = this.parseHash();
-    } catch (err) {
-      // Authentication returned an error.
-      throw err;
-      // showError(err);
-    }
+    authResult = this.parseHash();
 
     if (authResult && authResult.accessToken && authResult.idToken) {
       // Token was passed in location hash by authentication portal.
