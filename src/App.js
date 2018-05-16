@@ -158,10 +158,6 @@ const TodoList = observer(
       const countAll = store.items.length;
       const countVisible = visibleItems.length;
       const countShown = showItems.length;
-      console.log("countAll:", countAll);
-      console.log("countDone:", countDone);
-      console.log("countVisible:", countVisible);
-      console.log("countShown:", countShown);
       const allDates = visibleItems.map(item => item.created);
 
       return (
