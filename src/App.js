@@ -84,6 +84,10 @@ export default App;
 
 const TodoList = observer(
   class TodoList extends React.Component {
+    state = {
+      hideDone: JSON.parse(sessionStorage.getItem("hideDone", "false"))
+    };
+
     componentWillUnmount() {
       this.dismounted = true;
     }
@@ -136,10 +140,28 @@ const TodoList = observer(
       store.editItem = item;
     };
 
+    toggleHideDone = event => {
+      this.setState({ hideDone: !this.state.hideDone }, () => {
+        sessionStorage.setItem("hideDone", JSON.stringify(this.state.hideDone));
+      });
+    };
+
     render() {
       const visibleItems = store.items.filter(item => !item.hidden);
+      const showItems = visibleItems.filter(item => {
+        if (this.state.hideDone) {
+          return !item.done;
+        }
+        return true;
+      });
+      const countDone = visibleItems.filter(item => item.done).length;
       const countAll = store.items.length;
       const countVisible = visibleItems.length;
+      const countShown = showItems.length;
+      console.log("countAll:", countAll);
+      console.log("countDone:", countDone);
+      console.log("countVisible:", countVisible);
+      console.log("countShown:", countShown);
       const allDates = visibleItems.map(item => item.created);
 
       return (
@@ -214,7 +236,7 @@ const TodoList = observer(
             </form>
             <div className="list-container-inner">
               <TransitionGroup>
-                {visibleItems.map(item => (
+                {showItems.map(item => (
                   <CSSTransition key={item.id} timeout={300} classNames="fade">
                     {/* Is this (below) key= needed? */}
                     <Item
@@ -233,16 +255,28 @@ const TodoList = observer(
           </div>
 
           {visibleItems.length ? (
-            <p>
-              <button
-                className="button is-medium is-fullwidth"
-                onClick={event => {
-                  store.cleanSlate();
-                }}
-              >
-                Clean Slate
-              </button>
-            </p>
+            <div className="columns">
+              <div className="column">
+                <button
+                  className="button is-info is-fullwidth"
+                  onClick={event => {
+                    store.cleanSlate();
+                  }}
+                >
+                  Clean Slate
+                </button>
+              </div>
+              <div className="column">
+                <button
+                  className="button is-info is-fullwidth"
+                  onClick={this.toggleHideDone}
+                >
+                  {this.state.hideDone
+                    ? `Show Done Items (${countDone})`
+                    : `Hide Done Items (${countDone})`}
+                </button>
+              </div>
+            </div>
           ) : (
             <p className="freshness-blurb">
               Ahhhhh! The freshness of starting afresh!
