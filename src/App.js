@@ -6,6 +6,7 @@ import "bulma/css/bulma.css";
 import "csshake/dist/csshake.css";
 import "./App.css";
 import TimeLine from "./TimeLine";
+import "./Pyro.css";
 // import Linkify from "react-linkify";
 
 import {
@@ -85,7 +86,8 @@ export default App;
 const TodoList = observer(
   class TodoList extends React.Component {
     state = {
-      hideDone: JSON.parse(sessionStorage.getItem("hideDone", "false"))
+      hideDone: JSON.parse(sessionStorage.getItem("hideDone", "false")),
+      showPyros: false
     };
 
     componentWillUnmount() {
@@ -107,8 +109,22 @@ const TodoList = observer(
       }
     };
 
+    showPyrosTemporarily = (mseconds = 5000) => {
+      this.setState({ showPyros: true }, () => {
+        window.setTimeout(() => {
+          if (!this.dismounted) {
+            this.setState({ showPyros: false });
+          }
+        }, mseconds);
+      });
+    };
+
     doneItem = item => {
+      const wasNotDone = !item.done;
       store.doneItem(item);
+      if (wasNotDone) {
+        this.showPyrosTemporarily();
+      }
     };
 
     deleteItem = item => {
@@ -157,12 +173,18 @@ const TodoList = observer(
       const countDone = visibleItems.filter(item => item.done).length;
       const countAll = store.items.length;
       const countVisible = visibleItems.length;
-      const countShown = showItems.length;
       const allDates = visibleItems.map(item => item.created);
 
       return (
         <div>
           <h1>Things To Work On</h1>
+
+          {this.state.showPyros ? (
+            <div className="pyro">
+              <div className="before" />
+              <div className="after" />
+            </div>
+          ) : null}
 
           {store.deletedItem ? (
             <div className="notification is-warning undo-notification">
