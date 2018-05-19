@@ -7,7 +7,8 @@ default-src 'none';
 img-src 'self';
 script-src 'self';
 style-src 'self';
-font-src 'self'
+font-src 'self';
+manifest-src 'self'
 `.trim();
 
 const htmlFile = process.argv[2];
