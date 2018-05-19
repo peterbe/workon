@@ -22,6 +22,6 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
-    "deploy": "yarn run build && ./bin/update_version.js > build/version.json &&  gh-pages --add --dist build/"
+    "deploy": "./bin/deploy.sh"
   }
 }
