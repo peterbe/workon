@@ -1,5 +1,7 @@
 import { action, extendObservable } from "mobx";
-const uuidv4 = require("uuid/v4");
+import { KINTO_URL } from "./OpenIDClient";
+import Kinto from "kinto";
+// const uuidv4 = require("uuid/v4");
 
 // configure({ enforceActions: true });
 
@@ -7,32 +9,80 @@ class TodoStore {
   constructor(rootStore) {
     this.rootStore = rootStore;
 
+    this.db = new Kinto();
+    this.collection = this.db.collection("todos");
+
     extendObservable(this, {
       items: [],
       deletedItem: null,
       editItem: null,
       cleanSlateDate: null,
+      accessToken: null,
+      syncLog: {
+        error: null,
+        lastSuccess: null,
+        lastFailure: null
+      },
       obtain: action(() => {
-        const items = JSON.parse(localStorage.getItem("items") || "[]");
-        if (items.length) {
-          this.items = items;
+        this.collection.list().then(res => {
+          this.items = res.data;
+          this.sync();
+        });
+        // const items = JSON.parse(localStorage.getItem("items") || "[]");
+        // if (items.length) {
+        //   this.items = items;
+        // }
+        // this.items.replace(this.items.sort((a, b) => b.created - a.created));
+      }),
+      sync: action(() => {
+        // localStorage.setItem("items", JSON.stringify(this.items));
+        if (!this.accessToken) {
+          console.warn("No accessToken, no remote sync.");
+          return;
         }
-        this.items.replace(this.items.sort((a, b) => b.created - a.created));
+        const syncOptions = {
+          remote: KINTO_URL,
+          headers: {
+            Authorization: `Bearer ${this.accessToken}`
+          }
+        };
+        this.collection
+          .sync(syncOptions)
+          .then(data => {
+            this.syncLog.lastSuccess = new Date();
+          })
+          .catch(error => {
+            this.syncLog.error = error;
+            this.syncLog.lastFailure = new Date();
+          });
       }),
-      persist: action(() => {
-        localStorage.setItem("items", JSON.stringify(this.items));
-      }),
-      remoteSync: action(async (kintoClient, userInfo) => {
-        console.log(userInfo);
-        // const { data } = await kintoClient
-        //   .bucket("todos")
-        //   .collection(userInfo.sub)
-        //   .listRecords();
-        const { data } = await kintoClient
-          .bucket("workon")
-          .collection("todos")
-          .listRecords();
-        console.log("DATA", data);
+      // remoteSync: action(async (kintoClient, userInfo) => {
+      //   console.log(userInfo);
+      //   console.warn("WORK HARDER!");
+      //   // const { data } = await kintoClient
+      //   //   .bucket("todos")
+      //   //   .collection(userInfo.sub)
+      //   //   .listRecords();
+      //   // const { data } = await kintoClient
+      //   //   .bucket("workon")
+      //   //   .collection("todos")
+      //   //   .listRecords();
+      //   // console.log("DATA", data);
+      // }),
+      selfDestruct: action(() => {
+        // XXX perhaps ask the user if all the remote
+        this.collection
+          .clear()
+          .then(() => {
+            this.items = [];
+            this.editItem = null;
+            this.deleteItem = null;
+            this.sync();
+            alert("It's all gone.");
+          })
+          .catch(err => {
+            throw err;
+          });
       }),
       editItemText: action((text, notes, item) => {
         const thisItemIndex = this.items.findIndex(i => i.id === item.id);
@@ -41,7 +91,10 @@ class TodoStore {
         thisItem.notes = notes;
         thisItem.modified = new Date().getTime();
         this.items[thisItemIndex] = thisItem;
-        this.persist();
+        this.collection.update(thisItem).catch(err => {
+          throw err;
+        });
+        this.sync();
       }),
       addItem: action(text => {
         // // const previousIds = this.items.map(item => item.id);
@@ -49,28 +102,46 @@ class TodoStore {
         // if (previousIds.length) {
         //   nextId = Math.max(...previousIds) + 1;
         // }
-        const newId = uuidv4();
+        // const newId = uuidv4();
         const now = new Date();
-        this.items.unshift({
+        const item = {
           text,
           done: null,
           created: now.getTime(),
-          modified: now.getTime(),
-          id: newId
-        });
-        this.persist();
+          modified: now.getTime()
+          // id: newId
+        };
+        this.collection
+          .create(item)
+          .then(res => {
+            item.id = res.data.id;
+            this.items.unshift(item);
+            this.sync();
+          })
+          .catch(err => {
+            throw err;
+          });
       }),
       deleteItem: action(item => {
-        this.deletedItem = item;
         this.editItem = null;
-        this.items.remove(item);
-        this.persist();
-      }),
-      undoDelete: action(() => {
-        this.items.push(this.deletedItem);
-        this.items.replace(this.items.sort((a, b) => b.created - a.created));
-        this.deletedItem = null;
-        this.persist();
+        const thisItemIndex = this.items.findIndex(i => i.id === item.id);
+        const thisItem = this.items[thisItemIndex];
+        if (thisItem.deleted) {
+          thisItem.deleted = null;
+          this.deletedItem = null;
+        } else {
+          thisItem.deleted = new Date().getTime();
+          this.deletedItem = item;
+        }
+        this.collection
+          .update(thisItem)
+          .then(res => {
+            this.items[thisItemIndex] = thisItem;
+            this.sync();
+          })
+          .catch(err => {
+            throw err;
+          });
       }),
       doneItem: action(item => {
         const thisItemIndex = this.items.findIndex(i => i.id === item.id);
@@ -82,7 +153,14 @@ class TodoStore {
         }
         this.items[thisItemIndex] = thisItem;
         this.editItem = null;
-        this.persist();
+        this.collection
+          .update(thisItem)
+          .then(() => {
+            this.sync();
+          })
+          .catch(err => {
+            throw err;
+          });
       }),
       cleanSlate: action(() => {
         // Mark all that are NOT hidden as hidden now.
@@ -90,33 +168,42 @@ class TodoStore {
         this.items.forEach(item => {
           if (!item.hidden) {
             item.hidden = now;
+            this.collection.update(item).catch(err => {
+              throw err;
+            });
           }
         });
         this.cleanSlateDate = now;
-        this.persist();
+        this.sync();
       }),
       undoCleanSlate: action(() => {
         this.items.forEach(item => {
-          if (item.hidden && item.hidden === store.cleanSlateDate) {
+          if (
+            item.hidden &&
+            ((this.cleanSlateDate && item.hidden === this.cleanSlateDate) ||
+              (!this.cleanSlateDate && item.hidden))
+          ) {
             item.hidden = null;
+            this.collection.update(item).catch(err => {
+              throw err;
+            });
           }
         });
         this.cleanSlateDate = null;
-        this.persist();
-      }),
-      showAllHidden: action(() => {
-        this.items.forEach(item => {
-          if (item.hidden) {
-            item.hidden = null;
-          }
-        });
-        this.cleanSlateDate = null;
-        this.persist();
+        this.sync();
       })
-      // get visibleItems() {
-      //   console.log("CALLING visibleItems()");
-      //   return this.items.filter(item => !item.hidden);
-      // }
+      // showAllHidden: action(() => {
+      //   this.items.forEach(item => {
+      //     if (item.hidden) {
+      //       item.hidden = null;
+      //       this.collection.update(item).catch(err => {
+      //         throw err;
+      //       });
+      //     }
+      //   });
+      //   this.cleanSlateDate = null;
+      //   this.sync();
+      // })
     });
   }
 }

@@ -7,6 +7,7 @@ import "bulma/css/bulma.css";
 import "csshake/dist/csshake.css";
 import TimeLine from "./TimeLine";
 import Auth from "./Auth";
+import Settings from "./Settings";
 import "./App.css";
 import "./Pyro.css";
 import { OpenIDClient, KINTO_URL } from "./OpenIDClient";
@@ -82,7 +83,9 @@ const App = observer(
           .then(userInfo => {
             // console.log("userInfo", userInfo);
             store.user.userInfo = userInfo;
-            store.todos.remoteSync(this.kintoClient, userInfo);
+            store.todos.accessToken = accessToken;
+            store.todos.sync();
+            // store.todos.remoteSync(this.kintoClient, userInfo);
           });
       } else {
         // We're not already logged in. Query the kinto server to extract
@@ -131,6 +134,7 @@ const App = observer(
                     <Auth {...props} logIn={this.logIn} logOut={this.logOut} />
                   )}
                 />
+                <Route path="/settings" exact component={Settings} />
                 {/* <Route path="/blogitem/:id" component={EditBlogitem} /> */}
                 <Route component={NoMatch} />
               </Switch>
@@ -151,6 +155,9 @@ const App = observer(
                   </li>
                   <li>
                     <Link to="/auth">Authentication</Link>
+                  </li>
+                  <li>
+                    <Link to="/settings">Settings</Link>
                   </li>
                 </ul>
               </nav>
@@ -223,7 +230,9 @@ const TodoList = observer(
     };
 
     undoDelete = () => {
-      store.todos.undoDelete();
+      // store.todos.undoDelete();
+      console.log("UNDO DELETE ON", store.todos.deletedItem);
+      store.todos.deleteItem(store.todos.deletedItem);
     };
     undoCleanSlate = event => {
       store.todos.undoCleanSlate();
@@ -244,7 +253,8 @@ const TodoList = observer(
     };
 
     render() {
-      const visibleItems = store.todos.items.filter(item => !item.hidden);
+      const items = store.todos.items.filter(item => !item.deleted);
+      const visibleItems = items.filter(item => !item.hidden);
       const showItems = visibleItems.filter(item => {
         if (this.state.hideDone) {
           return !item.done;
@@ -252,7 +262,7 @@ const TodoList = observer(
         return true;
       });
       const countDone = visibleItems.filter(item => item.done).length;
-      const countAll = store.todos.items.length;
+      const countAll = items.length;
       const countVisible = visibleItems.length;
       const allDates = visibleItems.map(item => item.created);
 
@@ -336,10 +346,13 @@ const TodoList = observer(
             <div className="list-container-inner">
               <TransitionGroup>
                 {showItems.map(item => (
-                  <CSSTransition key={item.id} timeout={300} classNames="fade">
+                  <CSSTransition
+                    key={item.id || item.created}
+                    timeout={300}
+                    classNames="fade"
+                  >
                     {/* Is this (below) key= needed? */}
                     <Item
-                      key={item.id}
                       item={item}
                       allDates={allDates}
                       deleteItem={this.deleteItem}
@@ -353,7 +366,7 @@ const TodoList = observer(
             </div>
           </div>
 
-          {visibleItems.length ? (
+          {showItems.length ? (
             <div className="columns">
               <div className="column">
                 <button
@@ -387,11 +400,17 @@ const TodoList = observer(
               <button
                 className="button is-mini is-fullwidth"
                 onClick={event => {
-                  store.todos.showAllHidden();
+                  store.todos.undoCleanSlate();
                 }}
               >
                 Show all ({countAll - countVisible}) hidden items
               </button>
+            </p>
+          ) : null}
+
+          {store.todos.syncLog ? (
+            <p>
+              <small>{JSON.stringify(store.todos.syncLog)}</small>
             </p>
           ) : null}
         </div>
@@ -684,7 +703,7 @@ const Item = observer(
           >
             {item.text}
           </Linkify> */}
-            ‣ {item.text}
+            • {item.text}
           </p>
           {item.notes ? (
             <p className="metadata item-notes">

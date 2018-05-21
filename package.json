@@ -8,6 +8,7 @@
     "csshake": "1.5.3",
     "date-fns": "2.0.0-alpha.7",
     "gh-pages": "1.1.0",
+    "kinto": "11.1.2",
     "kinto-http": "4.5.3",
     "mobx": "4.2.1",
     "mobx-react": "5.1.2",
