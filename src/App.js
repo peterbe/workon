@@ -2,11 +2,15 @@ import React from "react";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { BrowserRouter as Router, Route, Switch, Link } from "react-router-dom";
 import { observer } from "mobx-react";
+import KintoClient from "kinto-http";
 import "bulma/css/bulma.css";
 import "csshake/dist/csshake.css";
-import "./App.css";
 import TimeLine from "./TimeLine";
+import Auth from "./Auth";
+import Settings from "./Settings";
+import "./App.css";
 import "./Pyro.css";
+import { OpenIDClient, KINTO_URL } from "./OpenIDClient";
 // import Linkify from "react-linkify";
 
 import {
@@ -19,6 +23,9 @@ import {
 } from "date-fns/esm";
 
 import store from "./Store";
+
+// const BUCKET = "default";
+// const COLLECTION = 'oidc-demo';
 
 const DisplayDate = date => {
   if (date === null) {
@@ -41,45 +48,126 @@ const NoMatch = ({ location }) => (
   </div>
 );
 
-class App extends React.Component {
-  componentDidMount() {
-    store.obtain();
-  }
+const App = observer(
+  class App extends React.Component {
+    componentDidMount() {
+      store.todos.obtain();
+      this.authenticate();
+    }
 
-  render() {
-    return (
-      <Router>
-        <div className="container">
-          <div className="box">
-            <Switch>
-              <Route path="/" exact component={TodoList} />
-              <Route path="/timeline" exact component={TimeLine} />
-              {/* <Route path="/blogitem/:id" component={EditBlogitem} /> */}
-              <Route component={NoMatch} />
-            </Switch>
-            <nav
-              className="breadcrumb is-centered has-bullet-separator"
-              aria-label="breadcrumbs"
-              style={{
-                marginTop: 30,
-                paddingTop: 10
-              }}
-            >
-              <ul>
-                <li>
-                  <Link to="/">Home</Link>
-                </li>
-                <li>
-                  <Link to="/timeline">Time Line</Link>
-                </li>
-              </ul>
-            </nav>
+    authenticate() {
+      this.kintoClient = new KintoClient(KINTO_URL);
+      // this.kintoClient.fetchServerInfo().then(data => {
+      //   // console.log("DATA", data);
+      //   this.providers = data.capabilities.openid.providers;
+      //   this.setState({ kintoInfo: data });
+      // });
+      this.authClient = new OpenIDClient();
+      const authResult = this.authClient.authenticate();
+      if (window.location.hash) {
+        console.warn(`Removing location hash '${window.location.hash}'`);
+        window.location.hash = "";
+      }
+
+      if (authResult) {
+        // console.log("AuthResult", authResult);
+        // const { provider, accessToken, tokenType, idTokenPayload } = authResult;
+        const { provider, accessToken, tokenType } = authResult;
+
+        // Set access token for requests to Kinto.
+        this.kintoClient.setHeaders({
+          Authorization: `${tokenType} ${accessToken}`
+        });
+        this.authClient
+          .userInfo(this.kintoClient, provider, accessToken)
+          .then(userInfo => {
+            // console.log("userInfo", userInfo);
+            store.user.userInfo = userInfo;
+            store.todos.accessToken = accessToken;
+            store.todos.sync();
+            // store.todos.remoteSync(this.kintoClient, userInfo);
+          });
+      } else {
+        // We're not already logged in. Query the kinto server to extract
+        // the list of possible providers.
+        this.kintoClient.fetchServerInfo().then(data => {
+          this.providers = data.capabilities.openid.providers;
+        });
+      }
+    }
+
+    logIn = event => {
+      // console.log("WORK HARDER");
+      this.authClient.authorize(this.providers[0]);
+    };
+
+    logOut = event => {
+      this.authClient.logout();
+      // this.setState({ loggedIn: false });
+    };
+
+    render() {
+      return (
+        <Router>
+          <div className="container">
+            <div className="box">
+              {store.user.userInfo ? (
+                <Link to="auth">
+                  <figure
+                    className="image is-32x32 is-pulled-right avatar"
+                    title={`Logged in as ${store.user.userInfo.name}, ${
+                      store.user.userInfo.email
+                    }`}
+                  >
+                    <img src={store.user.userInfo.picture} alt="Avatar" />
+                  </figure>
+                </Link>
+              ) : null}
+
+              <Switch>
+                <Route path="/" exact component={TodoList} />
+                <Route path="/timeline" exact component={TimeLine} />
+                <Route
+                  path="/auth"
+                  exact
+                  render={props => (
+                    <Auth {...props} logIn={this.logIn} logOut={this.logOut} />
+                  )}
+                />
+                <Route path="/settings" exact component={Settings} />
+                {/* <Route path="/blogitem/:id" component={EditBlogitem} /> */}
+                <Route component={NoMatch} />
+              </Switch>
+              <nav
+                className="breadcrumb is-centered has-bullet-separator"
+                aria-label="breadcrumbs"
+                style={{
+                  marginTop: 30,
+                  paddingTop: 10
+                }}
+              >
+                <ul>
+                  <li>
+                    <Link to="/">Home</Link>
+                  </li>
+                  <li>
+                    <Link to="/timeline">Time Line</Link>
+                  </li>
+                  <li>
+                    <Link to="/auth">Authentication</Link>
+                  </li>
+                  <li>
+                    <Link to="/settings">Settings</Link>
+                  </li>
+                </ul>
+              </nav>
+            </div>
           </div>
-        </div>
-      </Router>
-    );
+        </Router>
+      );
+    }
   }
-}
+);
 
 export default App;
 
@@ -97,14 +185,14 @@ const TodoList = observer(
     componentDidMount() {
       this.refs.new.focus();
       document.title = "Things To Work On";
-      // store.obtain();
+      // store.todos.obtain();
     }
 
     itemFormSubmit = event => {
       event.preventDefault();
       const text = this.refs.new.value.trim();
       if (text) {
-        store.addItem(text);
+        store.todos.addItem(text);
         this.refs.new.value = "";
       }
     };
@@ -121,39 +209,41 @@ const TodoList = observer(
 
     doneItem = item => {
       const wasNotDone = !item.done;
-      store.doneItem(item);
+      store.todos.doneItem(item);
       if (wasNotDone) {
         this.showPyrosTemporarily();
       }
     };
 
     deleteItem = item => {
-      store.deleteItem(item);
+      store.todos.deleteItem(item);
       if (this.giveupUndoTimeout) {
         window.clearTimeout(this.giveupUndoTimeout);
       }
       this.giveupUndoTimeout = window.setTimeout(() => {
         if (!this.dismounted) {
-          if (store.deletedItem) {
-            store.deletedItem = null;
+          if (store.todos.deletedItem) {
+            store.todos.deletedItem = null;
           }
         }
       }, 10 * 1000);
     };
 
     undoDelete = () => {
-      store.undoDelete();
+      // store.todos.undoDelete();
+      console.log("UNDO DELETE ON", store.todos.deletedItem);
+      store.todos.deleteItem(store.todos.deletedItem);
     };
     undoCleanSlate = event => {
-      store.undoCleanSlate();
+      store.todos.undoCleanSlate();
     };
 
     editItemText = (text, notes, item) => {
-      store.editItemText(text, notes, item);
+      store.todos.editItemText(text, notes, item);
     };
 
     toggleEditItem = (item = null) => {
-      store.editItem = item;
+      store.todos.editItem = item;
     };
 
     toggleHideDone = event => {
@@ -163,7 +253,8 @@ const TodoList = observer(
     };
 
     render() {
-      const visibleItems = store.items.filter(item => !item.hidden);
+      const items = store.todos.items.filter(item => !item.deleted);
+      const visibleItems = items.filter(item => !item.hidden);
       const showItems = visibleItems.filter(item => {
         if (this.state.hideDone) {
           return !item.done;
@@ -171,7 +262,7 @@ const TodoList = observer(
         return true;
       });
       const countDone = visibleItems.filter(item => item.done).length;
-      const countAll = store.items.length;
+      const countAll = items.length;
       const countVisible = visibleItems.length;
       const allDates = visibleItems.map(item => item.created);
 
@@ -186,12 +277,12 @@ const TodoList = observer(
             </div>
           ) : null}
 
-          {store.deletedItem ? (
+          {store.todos.deletedItem ? (
             <div className="notification is-warning undo-notification">
               {/* <button
                 className="delete"
                 onClick={event => {
-                  store.deletedItem = null;
+                  store.todos.deletedItem = null;
                 }}
               /> */}
               <button className="button is-primary" onClick={this.undoDelete}>
@@ -200,7 +291,7 @@ const TodoList = observer(
               <button
                 className="button is-small"
                 onClick={event => {
-                  store.deletedItem = null;
+                  store.todos.deletedItem = null;
                 }}
               >
                 Close
@@ -208,12 +299,12 @@ const TodoList = observer(
             </div>
           ) : null}
 
-          {store.cleanSlateDate ? (
+          {store.todos.cleanSlateDate ? (
             <div className="notification is-warning  undo-notification">
               <button
                 className="delete"
                 onClick={event => {
-                  store.cleanSlateDate = null;
+                  store.todos.cleanSlateDate = null;
                 }}
               />
               <button
@@ -225,7 +316,7 @@ const TodoList = observer(
               <button
                 className="button is-small"
                 onClick={event => {
-                  store.cleanSlateDate = null;
+                  store.todos.cleanSlateDate = null;
                 }}
               >
                 Close
@@ -233,9 +324,9 @@ const TodoList = observer(
             </div>
           ) : null}
 
-          {store.editItem ? (
+          {store.todos.editItem ? (
             <EditModal
-              item={store.editItem}
+              item={store.todos.editItem}
               edit={this.editItemText}
               close={this.toggleEditItem}
               delete={this.deleteItem}
@@ -255,10 +346,13 @@ const TodoList = observer(
             <div className="list-container-inner">
               <TransitionGroup>
                 {showItems.map(item => (
-                  <CSSTransition key={item.id} timeout={300} classNames="fade">
+                  <CSSTransition
+                    key={item.id || item.created}
+                    timeout={300}
+                    classNames="fade"
+                  >
                     {/* Is this (below) key= needed? */}
                     <Item
-                      key={item.id}
                       item={item}
                       allDates={allDates}
                       deleteItem={this.deleteItem}
@@ -272,13 +366,13 @@ const TodoList = observer(
             </div>
           </div>
 
-          {visibleItems.length ? (
+          {showItems.length ? (
             <div className="columns">
               <div className="column">
                 <button
                   className="button is-info is-fullwidth"
                   onClick={event => {
-                    store.cleanSlate();
+                    store.todos.cleanSlate();
                   }}
                 >
                   Clean Slate
@@ -306,11 +400,17 @@ const TodoList = observer(
               <button
                 className="button is-mini is-fullwidth"
                 onClick={event => {
-                  store.showAllHidden();
+                  store.todos.undoCleanSlate();
                 }}
               >
                 Show all ({countAll - countVisible}) hidden items
               </button>
+            </p>
+          ) : null}
+
+          {store.todos.syncLog ? (
+            <p>
+              <small>{JSON.stringify(store.todos.syncLog)}</small>
             </p>
           ) : null}
         </div>
@@ -603,7 +703,7 @@ const Item = observer(
           >
             {item.text}
           </Linkify> */}
-            ‣ {item.text}
+            • {item.text}
           </p>
           {item.notes ? (
             <p className="metadata item-notes">

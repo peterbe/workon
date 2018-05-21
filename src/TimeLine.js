@@ -23,7 +23,7 @@ const TimeLine = observer(
     }
 
     render() {
-      const doneItems = store.items.filter(item => item.done);
+      const doneItems = store.todos.items.filter(item => item.done);
       const groups = {};
       doneItems.reverse().forEach(item => {
         const date = startOfDay(item.done).getTime();
