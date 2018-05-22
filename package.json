@@ -2,6 +2,8 @@
   "name": "workon",
   "version": "0.1.0",
   "private": true,
+  "author": "Peter Bengtsson",
+  "license": "MIT",
   "dependencies": {
     "bulma": "0.7.1",
     "bulma-timeline": "2.0.1",
