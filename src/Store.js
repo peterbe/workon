@@ -26,7 +26,7 @@ class TodoStore {
       obtain: action(() => {
         this.collection.list().then(res => {
           this.items = res.data;
-          this.sync();
+          // this.sync();
         });
         // const items = JSON.parse(localStorage.getItem("items") || "[]");
         // if (items.length) {
@@ -46,14 +46,15 @@ class TodoStore {
             Authorization: `Bearer ${this.accessToken}`
           }
         };
+
         this.collection
           .sync(syncOptions)
           .then(data => {
-            this.syncLog.lastSuccess = new Date();
+            this.syncLog.lastSuccess = new Date().getTime();
           })
           .catch(error => {
             this.syncLog.error = error;
-            this.syncLog.lastFailure = new Date();
+            this.syncLog.lastFailure = new Date().getTime();
           });
       }),
       // remoteSync: action(async (kintoClient, userInfo) => {
@@ -212,8 +213,8 @@ class UserStore {
   constructor(rootStore) {
     this.rootStore = rootStore;
     extendObservable(this, {
-      userInfo: null
-      // deletedItem: null,
+      userInfo: null,
+      serverError: null
     });
   }
 }

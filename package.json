@@ -6,6 +6,7 @@
   "license": "MIT",
   "dependencies": {
     "bulma": "0.7.1",
+    "bulma-badge": "1.0.1",
     "bulma-timeline": "2.0.1",
     "csshake": "1.5.3",
     "date-fns": "2.0.0-alpha.7",
@@ -26,5 +27,6 @@
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "deploy": "./bin/deploy.sh"
-  }
+  },
+  "proxy": "http://localhost:8888"
 }

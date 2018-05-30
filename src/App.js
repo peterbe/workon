@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Route, Switch, Link } from "react-router-dom";
 import { observer } from "mobx-react";
 import KintoClient from "kinto-http";
 import "bulma/css/bulma.css";
+import "bulma-badge/dist/bulma-badge.min.css";
 import "csshake/dist/csshake.css";
 import TimeLine from "./TimeLine";
 import Auth from "./Auth";
@@ -57,11 +58,6 @@ const App = observer(
 
     authenticate() {
       this.kintoClient = new KintoClient(KINTO_URL);
-      // this.kintoClient.fetchServerInfo().then(data => {
-      //   // console.log("DATA", data);
-      //   this.providers = data.capabilities.openid.providers;
-      //   this.setState({ kintoInfo: data });
-      // });
       this.authClient = new OpenIDClient();
       const authResult = this.authClient.authenticate();
       if (window.location.hash) {
@@ -83,16 +79,33 @@ const App = observer(
           .then(userInfo => {
             // console.log("userInfo", userInfo);
             store.user.userInfo = userInfo;
+            store.user.serverError = null;
             store.todos.accessToken = accessToken;
             store.todos.sync();
             // store.todos.remoteSync(this.kintoClient, userInfo);
+          })
+          .catch(err => {
+            // This could happen when it fails to make an network
+            // connection to the Kinto server.
+            store.user.serverError = err;
+            console.warn(`Failed to get userInfo (${err})`);
+            // throw err;
           });
       } else {
         // We're not already logged in. Query the kinto server to extract
         // the list of possible providers.
-        this.kintoClient.fetchServerInfo().then(data => {
-          this.providers = data.capabilities.openid.providers;
-        });
+        this.kintoClient
+          .fetchServerInfo()
+          .then(data => {
+            this.providers = data.capabilities.openid.providers;
+            if (!this.providers.length) {
+              throw new Error("No valid providers returned");
+            }
+          })
+          .catch(err => {
+            store.user.serverError = err;
+            console.warn(`Error trying to fetch server info (${err})`);
+          });
       }
     }
 
@@ -154,7 +167,13 @@ const App = observer(
                     <Link to="/timeline">Time Line</Link>
                   </li>
                   <li>
-                    <Link to="/auth">Authentication</Link>
+                    <Link to="/auth">
+                      <AuthLinkText
+                        serverError={store.user.serverError}
+                        userInfo={store.user.userInfo}
+                      />
+                    </Link>
+                    {/* <Link to="/auth">Authentication</Link> */}
                   </li>
                   <li>
                     <Link to="/settings">Settings</Link>
@@ -170,6 +189,33 @@ const App = observer(
 );
 
 export default App;
+
+class AuthLinkText extends React.PureComponent {
+  render() {
+    const { serverError, userInfo } = this.props;
+    let className = "badge is-badge-small";
+    let data = "";
+    let title = "";
+    if (serverError) {
+      className += " is-badge-danger";
+      data = "!";
+      title = "Authentication failed because of a server error";
+    } else if (userInfo) {
+      className += " is-badge-success";
+      title = `Logged in as ${store.user.userInfo.name}, ${
+        store.user.userInfo.email
+      }`;
+    } else {
+      className += " is-badge-warning";
+      title = "You are not logged in so no remote backups can be made.";
+    }
+    return (
+      <span className={className} data-badge={data} title={title}>
+        Authentication
+      </span>
+    );
+  }
+}
 
 const TodoList = observer(
   class TodoList extends React.Component {
@@ -408,12 +454,58 @@ const TodoList = observer(
             </p>
           ) : null}
 
-          {store.todos.syncLog ? (
-            <p>
-              <small>{JSON.stringify(store.todos.syncLog)}</small>
-            </p>
-          ) : null}
+          <ShowSyncLog syncLog={store.todos.syncLog} />
         </div>
+      );
+    }
+  }
+);
+
+const ShowSyncLog = observer(
+  class ShowSyncLog extends React.Component {
+    subRender = syncLog => {
+      if (!(syncLog.lastSuccess || syncLog.lastFailure)) {
+        return (
+          <small
+            title="Authenticate to enable backup"
+            className="has-text-warning"
+          >
+            Data <i>not</i> backed up.
+          </small>
+        );
+      } else if (
+        (syncLog.lastSuccess && !syncLog.lastFailure) ||
+        syncLog.lastSuccess > syncLog.lastFailure
+      ) {
+        return (
+          <small className="has-text-success">
+            Data backed up{" "}
+            {formatDistance(syncLog.lastSuccess, new Date(), {
+              addSuffix: true
+            })}.
+          </small>
+        );
+      } else if (
+        (syncLog.lastFailure && !syncLog.lastSuccess) ||
+        syncLog.lastFailure > syncLog.lastSuccess
+      ) {
+        return (
+          <small className="has-text-danger">
+            Last data backed-up failed{" "}
+            {formatDistance(syncLog.lastFailure, new Date(), {
+              addSuffix: true
+            })}.
+          </small>
+        );
+      }
+      console.log(syncLog.lastSuccess, syncLog.lastFailure);
+      return <small>{JSON.stringify(store.todos.syncLog)}</small>;
+    };
+    render() {
+      return (
+        <p className="has-text-centered">
+          {this.subRender(store.todos.syncLog)}
+        </p>
       );
     }
   }

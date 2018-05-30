@@ -1,5 +1,4 @@
-export const KINTO_URL =
-  process.env.REACT_APP_KINTO_URL || "http://localhost:8888/v1";
+export const KINTO_URL = process.env.REACT_APP_KINTO_URL || "/v1";
 const SCOPES = "openid email profile";
 
 export class OpenIDClient {
@@ -14,7 +13,9 @@ export class OpenIDClient {
 
   async userInfo(kintoClient, provider, accessToken) {
     const {
-      capabilities: { openid: { providers } }
+      capabilities: {
+        openid: { providers }
+      }
     } = await kintoClient.fetchServerInfo();
     const { userinfo_endpoint: userinfoEndpoint } = providers.filter(
       ({ name }) => name === provider
