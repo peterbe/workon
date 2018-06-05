@@ -53,6 +53,14 @@ class TodoStore {
             this.syncLog.lastSuccess = new Date().getTime();
           })
           .catch(error => {
+            if (error.message.includes("flushed")) {
+              return this.collection.resetSyncStatus().then(_ => {
+                this.collection.sync();
+                alert("Server data flushed. Trying to refresh this page.");
+                window.location.reload();
+              });
+            }
+            // throw err;
             this.syncLog.error = error;
             this.syncLog.lastFailure = new Date().getTime();
           });

@@ -1,2 +1,2 @@
-kinto[postgresql]
-kinto-wizard
+kinto[postgresql]==9.1.2
+# kinto-wizard

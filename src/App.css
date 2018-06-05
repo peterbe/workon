@@ -154,3 +154,13 @@ div.list-container .list-container-inner {
     overflow-y: scroll;
   }
 } */
+
+.has-text-warning {
+  /* color: rgb(243, 203, 24) !important; */
+  color: rgb(255, 167, 60) !important;
+}
+
+.badge.is-badge-warning:not([data-badge])::after, .badge.is-badge-warning[data-badge]::after {
+  background: rgb(255, 167, 60);
+  /* color: rgba(0,0,0,.7); */
+}

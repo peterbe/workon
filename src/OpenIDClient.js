@@ -6,9 +6,14 @@ export class OpenIDClient {
     const { auth_path: authPath, name } = provider;
     const callback = `${window.location.href}#provider=${name}&tokens=`;
     // Redirect the browser to start the OAuth login dance.
-    window.location = `${KINTO_URL}${authPath}?callback=${encodeURIComponent(
+    let redirectUrl = `${KINTO_URL}${authPath}?callback=${encodeURIComponent(
       callback
     )}&scope=${SCOPES}`;
+    if (redirectUrl.startsWith("/v1")) {
+      // Only applicable for local development
+      redirectUrl = `http://${window.location.hostname}:8888${redirectUrl}`;
+    }
+    window.location = redirectUrl;
   }
 
   async userInfo(kintoClient, provider, accessToken) {

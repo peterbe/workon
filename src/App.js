@@ -498,7 +498,6 @@ const ShowSyncLog = observer(
           </small>
         );
       }
-      console.log(syncLog.lastSuccess, syncLog.lastFailure);
       return <small>{JSON.stringify(store.todos.syncLog)}</small>;
     };
     render() {
