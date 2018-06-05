@@ -25,8 +25,16 @@ import {
 
 import store from "./Store";
 
-// const BUCKET = "default";
-// const COLLECTION = 'oidc-demo';
+// Hacky solution to make it possible to manually pretend that the
+// access token is about to expire.
+// In the Web Console, type in something like `windExpires(23.5)` and
+// it will make it so that the access token is going to 23.5h sooner
+// than now.
+window.windExpires = function(hours) {
+  let e = JSON.parse(localStorage.expires_at);
+  e -= 1000 * 60 * 60 * hours;
+  localStorage.setItem("expires_at", e);
+};
 
 const DisplayDate = date => {
   if (date === null) {
@@ -56,43 +64,40 @@ const App = observer(
       this.authenticate();
     }
 
+    componentWillUnmount() {
+      this.dismounted = true;
+    }
+
+    // Sign in either by localStorage or by window.location.hash
     authenticate() {
       this.kintoClient = new KintoClient(KINTO_URL);
       this.authClient = new OpenIDClient();
       const authResult = this.authClient.authenticate();
       if (window.location.hash) {
-        console.warn(`Removing location hash '${window.location.hash}'`);
         window.location.hash = "";
       }
-
       if (authResult) {
-        // console.log("AuthResult", authResult);
-        // const { provider, accessToken, tokenType, idTokenPayload } = authResult;
-        const { provider, accessToken, tokenType } = authResult;
-
-        // Set access token for requests to Kinto.
-        this.kintoClient.setHeaders({
-          Authorization: `${tokenType} ${accessToken}`
-        });
+        // At this point, the authResult.accessToken can either come from
+        // right-after authentication or it can come from localStorage.
+        const { provider, accessToken } = authResult;
         this.authClient
           .userInfo(this.kintoClient, provider, accessToken)
-          .then(userInfo => {
-            // console.log("userInfo", userInfo);
-            store.user.userInfo = userInfo;
-            store.user.serverError = null;
-            store.todos.accessToken = accessToken;
-            store.todos.sync();
-            // store.todos.remoteSync(this.kintoClient, userInfo);
-          })
           .catch(err => {
             // This could happen when it fails to make an network
             // connection to the Kinto server.
             store.user.serverError = err;
             console.warn(`Failed to get userInfo (${err})`);
             // throw err;
+          })
+          .then(userInfo => {
+            store.user.userInfo = userInfo;
+            store.user.serverError = null;
+            store.todos.accessToken = accessToken;
+            store.todos.sync();
+            this.accessTokenRefreshLoop(provider);
           });
       } else {
-        // We're not already logged in. Query the kinto server to extract
+        // We're NOT already logged in. Query the kinto server to extract
         // the list of possible providers.
         this.kintoClient
           .fetchServerInfo()
@@ -100,6 +105,12 @@ const App = observer(
             this.providers = data.capabilities.openid.providers;
             if (!this.providers.length) {
               throw new Error("No valid providers returned");
+            }
+            if (this.authClient.haveAuthenticated()) {
+              // The user has authenticated before but now it's most
+              // likely expired.
+              // Press the "Login" button for the user.
+              this.authClient.authorize(this.providers[0], true);
             }
           })
           .catch(err => {
@@ -109,13 +120,48 @@ const App = observer(
       }
     }
 
+    // This starts an infinite loop over constantly checking if the
+    // access token is getting too old. It will continue to loop until
+    // either the App component unmounts or if the access token really
+    // is too old. If that happens, a redirect will be the result.
+    accessTokenRefreshLoop = provider => {
+      if (this.authClient.timeToRefresh(true)) {
+        // The accessToken needs to be refreshed!
+        this.kintoClient
+          .fetchServerInfo()
+          .then(data => {
+            const providers = data.capabilities.openid.providers;
+            if (!providers.length) {
+              throw new Error("No valid providers returned");
+            }
+            const providerObj = providers.find(p => p.name === provider);
+            this.authClient.authorize(providerObj, true);
+          })
+          .catch(err => {
+            store.user.serverError = err;
+            console.warn(`Error trying to fetch server info (${err})`);
+          });
+      } else {
+        window.setTimeout(() => {
+          if (!this.dismounted) {
+            this.accessTokenRefreshLoop(provider);
+          }
+        }, 5 * 60 * 1000);
+      }
+    };
+
     logIn = event => {
-      // console.log("WORK HARDER");
+      // This call will result in a window.location redirect and when
+      // that's finished, it will come back here to this component
+      // and trigger then this.authenticate() method above.
       this.authClient.authorize(this.providers[0]);
     };
 
     logOut = event => {
       this.authClient.logout();
+      store.user.userInfo = null;
+      store.user.serverError = null;
+      store.todos.accessToken = null;
       // this.setState({ loggedIn: false });
     };
 

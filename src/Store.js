@@ -53,6 +53,7 @@ class TodoStore {
             this.syncLog.lastSuccess = new Date().getTime();
           })
           .catch(error => {
+            console.log("ERROR:", error);
             if (error.message.includes("flushed")) {
               return this.collection.resetSyncStatus().then(_ => {
                 this.collection.sync();
@@ -60,7 +61,10 @@ class TodoStore {
                 window.location.reload();
               });
             }
-            // throw err;
+            if (error.data && error.data.code && error.data.code === 401) {
+              // The access token is out-of-date
+              this.accessToken = null;
+            }
             this.syncLog.error = error;
             this.syncLog.lastFailure = new Date().getTime();
           });
