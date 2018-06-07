@@ -266,7 +266,7 @@ class AuthLinkText extends React.PureComponent {
 const TodoList = observer(
   class TodoList extends React.Component {
     state = {
-      hideDone: JSON.parse(sessionStorage.getItem("hideDone", "false")),
+      hideDone: JSON.parse(localStorage.getItem("hideDone", "false")),
       showPyros: false
     };
 
@@ -340,7 +340,7 @@ const TodoList = observer(
 
     toggleHideDone = event => {
       this.setState({ hideDone: !this.state.hideDone }, () => {
-        sessionStorage.setItem("hideDone", JSON.stringify(this.state.hideDone));
+        localStorage.setItem("hideDone", JSON.stringify(this.state.hideDone));
       });
     };
 
