@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eo pipefail
 
-yarn run build
+REACT_APP_KINTO_URL=https://kinto.workon.app/v1 yarn run build
 
 ./bin/insert_csp.js build/index.html
 
