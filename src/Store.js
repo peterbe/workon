@@ -24,7 +24,7 @@ class TodoStore {
         lastFailure: null
       },
       obtain: action(() => {
-        this.collection.list().then(res => {
+        this.collection.list({ order: "-created" }).then(res => {
           this.items = res.data;
           // this.sync();
         });
@@ -53,7 +53,7 @@ class TodoStore {
             this.syncLog.lastSuccess = new Date().getTime();
           })
           .catch(error => {
-            console.log("ERROR:", error);
+            console.warn("ERROR:", error);
             if (error.message.includes("flushed")) {
               return this.collection.resetSyncStatus().then(_ => {
                 this.collection.sync();
@@ -69,19 +69,6 @@ class TodoStore {
             this.syncLog.lastFailure = new Date().getTime();
           });
       }),
-      // remoteSync: action(async (kintoClient, userInfo) => {
-      //   console.log(userInfo);
-      //   console.warn("WORK HARDER!");
-      //   // const { data } = await kintoClient
-      //   //   .bucket("todos")
-      //   //   .collection(userInfo.sub)
-      //   //   .listRecords();
-      //   // const { data } = await kintoClient
-      //   //   .bucket("workon")
-      //   //   .collection("todos")
-      //   //   .listRecords();
-      //   // console.log("DATA", data);
-      // }),
       selfDestruct: action(() => {
         // XXX perhaps ask the user if all the remote
         this.collection
@@ -110,12 +97,6 @@ class TodoStore {
         this.sync();
       }),
       addItem: action(text => {
-        // // const previousIds = this.items.map(item => item.id);
-        // let nextId = 1;
-        // if (previousIds.length) {
-        //   nextId = Math.max(...previousIds) + 1;
-        // }
-        // const newId = uuidv4();
         const now = new Date();
         const item = {
           text,
@@ -130,6 +111,18 @@ class TodoStore {
             item.id = res.data.id;
             this.items.unshift(item);
             this.sync();
+          })
+          .catch(err => {
+            throw err;
+          });
+      }),
+      importItem: action(item => {
+        this.collection
+          .create(item)
+          .then(res => {
+            item.id = res.data.id;
+            this.items.unshift(item);
+            // this.sync();
           })
           .catch(err => {
             throw err;
