@@ -3,7 +3,8 @@ const fs = require("fs");
 const spawn = require("child_process").spawnSync;
 
 const CSP = `
-default-src 'none' 'https://kinto.workon.app';
+default-src 'none';
+connect-src  kinto.workon.app;
 img-src 'self';
 script-src 'self';
 style-src 'self';
