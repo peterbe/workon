@@ -164,3 +164,11 @@ div.list-container .list-container-inner {
   background: rgb(255, 167, 60);
   /* color: rgba(0,0,0,.7); */
 }
+
+
+div.item p:before {
+  content: "• ";
+}
+/* div.item p.strikeout:before {
+  content: "☑";
+} */

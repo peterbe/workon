@@ -861,7 +861,7 @@ const Item = observer(
           >
             {item.text}
           </Linkify> */}
-            • {item.text}
+            {item.text}
           </p>
           {item.notes ? (
             <p className="metadata item-notes">
