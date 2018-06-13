@@ -3,6 +3,7 @@ import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { BrowserRouter as Router, Route, Switch, Link } from "react-router-dom";
 import { observer } from "mobx-react";
 import KintoClient from "kinto-http";
+import PullToRefresh from "pulltorefreshjs";
 import "bulma/css/bulma.css";
 import "bulma-badge/dist/bulma-badge.min.css";
 import "csshake/dist/csshake.css";
@@ -83,10 +84,22 @@ const App = observer(
           }
         }
       }, 2000);
+
+      this.pullToRefresh = PullToRefresh.init({
+        mainElement: "body",
+        onRefresh: () => {
+          if (store.todos.accessToken) {
+            store.todos.sync();
+          }
+        }
+      });
     }
 
     componentWillUnmount() {
       this.dismounted = true;
+      if (this.pullToRefresh) {
+        this.pullToRefresh.destroyAll();
+      }
     }
 
     // Sign in either by localStorage or by window.location.hash
