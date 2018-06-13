@@ -25,7 +25,7 @@ div.list-container input {
   font-size: 130%;
 }
 .box div.item {
-  font-size: 160%;
+  font-size: 130%;
   padding-top: 15px;
   padding-bottom: 15px;
   /* padding-bottom: 20px; */
@@ -72,6 +72,10 @@ figure.avatar img {
   border-radius: 50%;
 }
 
+.breadcrumb li a {
+  padding: 0 0.25em;
+}
+
 @media (min-width: 768px) {
   .box h1 {
     font-size: 400%;
@@ -88,6 +92,10 @@ figure.avatar img {
   /* p.freshness-blurb {
     margin: 100px;
   } */
+
+  .breadcrumb li a {
+    padding: 0 0.75em;
+  }
 
   .box {
     margin: 20px 150px;
