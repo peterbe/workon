@@ -2,7 +2,7 @@ import React from "react";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { BrowserRouter as Router, Route, Switch, Link } from "react-router-dom";
 import { observer } from "mobx-react";
-import KintoClient from "kinto-http";
+// import KintoClient from "kinto-http";
 import PullToRefresh from "pulltorefreshjs";
 import "bulma/css/bulma.css";
 import "bulma-badge/dist/bulma-badge.min.css";
@@ -12,8 +12,14 @@ import Auth from "./Auth";
 import Settings from "./Settings";
 import "./App.css";
 import "./Pyro.css";
-import { OpenIDClient, KINTO_URL } from "./OpenIDClient";
+import auth0 from "auth0-js";
 // import Linkify from "react-linkify";
+import {
+  OIDC_DOMAIN,
+  OIDC_CLIENT_ID,
+  OIDC_CALLBACK_URL,
+  OIDC_AUDIENCE
+} from "./Config";
 
 import {
   toDate,
@@ -32,9 +38,9 @@ import store from "./Store";
 // it will make it so that the access token is going to 23.5h sooner
 // than now.
 window.windExpires = function(hours) {
-  let e = JSON.parse(localStorage.expires_at);
+  let e = JSON.parse(localStorage.expiresAt);
   e -= 1000 * 60 * 60 * hours;
-  localStorage.setItem("expires_at", e);
+  localStorage.setItem("expiresAt", e);
 };
 
 const DisplayDate = date => {
@@ -83,99 +89,107 @@ const App = observer(
 
     // Sign in either by localStorage or by window.location.hash
     authenticate() {
-      this.kintoClient = new KintoClient(KINTO_URL);
-      this.authClient = new OpenIDClient();
-      const authResult = this.authClient.authenticate();
-      if (window.location.hash) {
-        window.location.hash = "";
-      }
-      if (authResult) {
-        // At this point, the authResult.accessToken can either come from
-        // right-after authentication or it can come from localStorage.
-        const { provider, accessToken } = authResult;
-        this.authClient
-          .userInfo(this.kintoClient, provider, accessToken)
-          .catch(err => {
-            // This could happen when it fails to make an network
-            // connection to the Kinto server.
-            store.user.serverError = err;
-            console.warn(`Failed to get userInfo (${err})`);
-            // throw err;
-          })
-          .then(userInfo => {
-            store.user.userInfo = userInfo;
-            store.user.serverError = null;
-            store.todos.accessToken = accessToken;
-            store.todos.sync();
-            this.accessTokenRefreshLoop(provider);
-          });
-      } else {
-        // We're NOT already logged in. Query the kinto server to extract
-        // the list of possible providers.
-        this.kintoClient
-          .fetchServerInfo()
-          .then(data => {
-            this.providers = data.capabilities.openid.providers;
-            if (!this.providers.length) {
-              throw new Error("No valid providers returned");
-            }
-            if (this.authClient.haveAuthenticated()) {
-              // The user has authenticated before but now it's most
-              // likely expired.
-              // Press the "Login" button for the user.
-              this.authClient.authorize(this.providers[0], true);
-            }
-          })
-          .catch(err => {
-            store.user.serverError = err;
-            console.warn(`Error trying to fetch server info (${err})`);
-          });
-      }
+      this.webAuth = new auth0.WebAuth({
+        domain: OIDC_DOMAIN,
+        clientID: OIDC_CLIENT_ID,
+        redirectUri: OIDC_CALLBACK_URL,
+        audience: OIDC_AUDIENCE,
+        responseType: "token id_token",
+        scope: "openid profile email"
+      });
+
+      this.webAuth.parseHash(
+        { hash: window.location.hash },
+        (err, authResult) => {
+          if (err) {
+            return console.error(err);
+          }
+
+          if (!authResult) {
+            authResult = JSON.parse(localStorage.getItem("authResult"));
+          }
+
+          // The contents of authResult depend on which authentication parameters were used.
+          // It can include the following:
+          // authResult.accessToken - access token for the API specified by `audience`
+          // authResult.expiresIn - string with the access token's expiration time in seconds
+          // authResult.idToken - ID token JWT containing user profile information
+          this._postProcessAuthResult(authResult);
+        }
+      );
     }
 
-    // This starts an infinite loop over constantly checking if the
-    // access token is getting too old. It will continue to loop until
-    // either the App component unmounts or if the access token really
-    // is too old. If that happens, a redirect will be the result.
-    accessTokenRefreshLoop = provider => {
-      if (this.authClient.timeToRefresh(true)) {
-        // The accessToken needs to be refreshed!
-        this.kintoClient
-          .fetchServerInfo()
-          .then(data => {
-            const providers = data.capabilities.openid.providers;
-            if (!providers.length) {
-              throw new Error("No valid providers returned");
-            }
-            const providerObj = providers.find(p => p.name === provider);
-            this.authClient.authorize(providerObj, true);
-          })
-          .catch(err => {
+    _postProcessAuthResult = authResult => {
+      if (authResult) {
+        this.webAuth.client.userInfo(authResult.accessToken, (err, user) => {
+          if (err) {
             store.user.serverError = err;
-            console.warn(`Error trying to fetch server info (${err})`);
-          });
+            return console.error(err);
+          }
+          // Now you have the user's information
+          store.user.userInfo = user;
+          store.user.serverError = null;
+          store.todos.accessToken = authResult.accessToken;
+          store.todos.sync();
+
+          const expiresAt = authResult.expiresIn * 1000 + new Date().getTime();
+          if (authResult.state) {
+            delete authResult.state;
+          }
+          localStorage.setItem("authResult", JSON.stringify(authResult));
+          localStorage.setItem("expiresAt", JSON.stringify(expiresAt));
+          this.accessTokenRefreshLoop();
+        });
+      }
+    };
+
+    accessTokenRefreshLoop = () => {
+      // Return true if the access token has expired (or is about to expire)
+      const expiresAt = JSON.parse(localStorage.getItem("expiresAt"));
+      // 'age' in milliseconds
+      let age = expiresAt - new Date().getTime();
+      console.log(
+        "accessToken expires in",
+        formatDistance(expiresAt, new Date())
+      );
+      // Consider the accessToken to be expired if it's about to expire
+      // in 30 minutes.
+      age -= 30 * 60 * 1000;
+      const timeToRefresh = age < 0;
+
+      if (timeToRefresh) {
+        this.webAuth.checkSession({}, (err, authResult) => {
+          if (err) {
+            console.warn("Error trying to checkSession");
+            return console.error(err);
+          }
+          this._postProcessAuthResult(authResult);
+        });
       } else {
         window.setTimeout(() => {
           if (!this.dismounted) {
-            this.accessTokenRefreshLoop(provider);
+            this.accessTokenRefreshLoop();
           }
         }, 5 * 60 * 1000);
+        // }, 10 * 1000);
       }
     };
 
     logIn = event => {
-      // This call will result in a window.location redirect and when
-      // that's finished, it will come back here to this component
-      // and trigger then this.authenticate() method above.
-      this.authClient.authorize(this.providers[0]);
+      this.webAuth.authorize({
+        // state: returnUrl,
+        state: "/"
+      });
     };
 
     logOut = event => {
-      this.authClient.logout();
-      store.user.userInfo = null;
-      store.user.serverError = null;
-      store.todos.accessToken = null;
-      // this.setState({ loggedIn: false });
+      localStorage.removeItem("expiresAt");
+      localStorage.removeItem("authResult");
+      const rootUrl = `${window.location.protocol}//${window.location.host}/`;
+      this.webAuth.logout({
+        returnTo: rootUrl,
+        clientID: OIDC_CLIENT_ID
+      });
     };
 
     render() {

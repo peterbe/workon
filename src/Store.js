@@ -1,7 +1,6 @@
 import { action, extendObservable } from "mobx";
-import { KINTO_URL } from "./OpenIDClient";
+import { KINTO_URL } from "./Config";
 import Kinto from "kinto";
-// const uuidv4 = require("uuid/v4");
 
 // configure({ enforceActions: true });
 

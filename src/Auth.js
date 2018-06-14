@@ -5,10 +5,6 @@ import store from "./Store";
 
 const Auth = observer(
   class Auth extends React.Component {
-    state = {
-      kintoInfo: null
-      // loggedIn: false
-    };
     pageTitle = "Authentication";
     componentDidMount() {
       document.title = this.pageTitle; // XXX Use helmet
@@ -55,13 +51,6 @@ const Auth = observer(
               <h2>
                 Logged in as: <code>{store.user.userInfo.email}</code>
               </h2>
-            </div>
-          ) : null}
-
-          {this.state.kintoInfo ? (
-            <div className="box">
-              <h4>Kinto Server</h4>
-              <pre>{JSON.stringify(this.state.kintoInfo, undefined, 2)}</pre>
             </div>
           ) : null}
         </div>

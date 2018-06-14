@@ -5,6 +5,7 @@
   "author": "Peter Bengtsson",
   "license": "MIT",
   "dependencies": {
+    "auth0-js": "9.6.1",
     "bulma": "0.7.1",
     "bulma-badge": "1.0.1",
     "bulma-timeline": "2.0.3",
