@@ -64,27 +64,6 @@ const App = observer(
       store.todos.obtain();
       this.authenticate();
 
-      window.setTimeout(() => {
-        if (localStorage.getItem("items")) {
-          if (window.confirm("Wanna migrate from localStorage?")) {
-            const items = JSON.parse(localStorage.getItem("items"));
-            items.forEach(item => {
-              delete item.id;
-              console.log("ITEM:", item);
-              // const item = {
-              //   text: oldItem.text,
-              //   done: oldItem.done,
-              //   created: oldItem.created,
-              //   modified: oldItem.modified,
-              //   // id: newId
-              // };
-              store.todos.importItem(item);
-            });
-            localStorage.removeItem("items");
-          }
-        }
-      }, 2000);
-
       this.pullToRefresh = PullToRefresh.init({
         mainElement: "body",
         onRefresh: () => {
