@@ -2,7 +2,6 @@ import React from "react";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { BrowserRouter as Router, Route, Switch, Link } from "react-router-dom";
 import { observer } from "mobx-react";
-// import KintoClient from "kinto-http";
 import PullToRefresh from "pulltorefreshjs";
 import "bulma/css/bulma.css";
 import "bulma-badge/dist/bulma-badge.min.css";
@@ -13,7 +12,6 @@ import Settings from "./Settings";
 import "./App.css";
 import "./Pyro.css";
 import auth0 from "auth0-js";
-// import Linkify from "react-linkify";
 import {
   OIDC_DOMAIN,
   OIDC_CLIENT_ID,
@@ -98,48 +96,62 @@ const App = observer(
         scope: "openid profile email"
       });
 
-      this.webAuth.parseHash(
-        { hash: window.location.hash },
-        (err, authResult) => {
-          if (err) {
-            return console.error(err);
-          }
-
-          if (!authResult) {
-            authResult = JSON.parse(localStorage.getItem("authResult"));
-          }
-
-          // The contents of authResult depend on which authentication parameters were used.
-          // It can include the following:
-          // authResult.accessToken - access token for the API specified by `audience`
-          // authResult.expiresIn - string with the access token's expiration time in seconds
-          // authResult.idToken - ID token JWT containing user profile information
-          this._postProcessAuthResult(authResult);
+      this.webAuth.parseHash({}, (err, authResult) => {
+        if (err) {
+          return console.error(err);
         }
-      );
+
+        if (authResult && window.location.hash) {
+          window.location.hash = "";
+        }
+
+        if (!authResult) {
+          authResult = JSON.parse(localStorage.getItem("authResult"));
+        }
+
+        // The contents of authResult depend on which authentication parameters were used.
+        // It can include the following:
+        // authResult.accessToken - access token for the API specified by `audience`
+        // authResult.expiresIn - string with the access token's expiration time in seconds
+        // authResult.idToken - ID token JWT containing user profile information
+        this._postProcessAuthResult(authResult);
+      });
     }
 
     _postProcessAuthResult = authResult => {
       if (authResult) {
-        this.webAuth.client.userInfo(authResult.accessToken, (err, user) => {
-          if (err) {
-            store.user.serverError = err;
-            return console.error(err);
-          }
-          // Now you have the user's information
-          store.user.userInfo = user;
-          store.user.serverError = null;
-          store.todos.accessToken = authResult.accessToken;
-          store.todos.sync();
+        // Conver the accessToken to a user profile so we can
+        // indicate who logged in.
+        const userInfo = JSON.parse(localStorage.getItem("userInfo") || "null");
+        if (userInfo) {
+          store.user.userInfo = userInfo;
+        } else {
+          this.webAuth.client.userInfo(authResult.accessToken, (err, user) => {
+            if (err) {
+              store.user.serverError = err;
+              return console.error(err);
+            }
+            // Now you have the user's information
+            store.user.userInfo = user;
+            // Cache this in the current tab. This assumes that the name
+            // and email doesn't change much.
+            localStorage.setItem("userInfo", JSON.stringify(user));
+            store.user.serverError = null;
+          });
+        }
 
-          const expiresAt = authResult.expiresIn * 1000 + new Date().getTime();
-          if (authResult.state) {
-            delete authResult.state;
-          }
-          localStorage.setItem("authResult", JSON.stringify(authResult));
-          localStorage.setItem("expiresAt", JSON.stringify(expiresAt));
-          this.accessTokenRefreshLoop();
-        });
+        store.todos.accessToken = authResult.accessToken;
+        store.todos.sync();
+
+        const expiresAt = authResult.expiresIn * 1000 + new Date().getTime();
+        if (authResult.state) {
+          // XXX we could use authResult.state to redirect to where you
+          // came from.
+          delete authResult.state;
+        }
+        localStorage.setItem("authResult", JSON.stringify(authResult));
+        localStorage.setItem("expiresAt", JSON.stringify(expiresAt));
+        this.accessTokenRefreshLoop();
       }
     };
 
@@ -175,16 +187,17 @@ const App = observer(
       }
     };
 
-    logIn = event => {
+    logIn = () => {
       this.webAuth.authorize({
         // state: returnUrl,
-        state: "/"
+        state: ""
       });
     };
 
-    logOut = event => {
+    logOut = () => {
       localStorage.removeItem("expiresAt");
       localStorage.removeItem("authResult");
+      localStorage.removeItem("userInfo");
       const rootUrl = `${window.location.protocol}//${window.location.host}/`;
       this.webAuth.logout({
         returnTo: rootUrl,
