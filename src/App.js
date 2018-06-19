@@ -3,6 +3,7 @@ import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { BrowserRouter as Router, Route, Switch, Link } from "react-router-dom";
 import { observer } from "mobx-react";
 import PullToRefresh from "pulltorefreshjs";
+import getUrls from "get-urls";
 import "bulma/css/bulma.css";
 import "bulma-badge/dist/bulma-badge.min.css";
 import "csshake/dist/csshake.css";
@@ -601,13 +602,15 @@ class EditModal extends React.Component {
     super(props);
     this.state = {
       saveDisabled: true,
-      editNotes: !!this.props.item.notes
+      editNotes: !!this.props.item.notes,
+      urls: Array.from(getUrls(this.props.item.text))
     };
   }
 
   componentDidMount() {
     this.refs.text.focus();
     window.addEventListener("keydown", this._escapeKey, true);
+    console.log("URLS", this.state.urls);
   }
   componentWillUnmount() {
     window.removeEventListener("keydown", this._escapeKey, true);
@@ -641,18 +644,18 @@ class EditModal extends React.Component {
       <div className="modal is-active">
         <div
           className="modal-background"
-          onClick={event => {
+          onClick={() => {
             this.props.close();
           }}
         />
 
         <div className="modal-content">
-          <div className="box">
+          <div className="box" style={{ margin: 0 }}>
             <div className="is-clearfix" style={{ marginBottom: 20 }}>
               <button
                 type="button"
                 className="button is-pulled-right is-danger"
-                onClick={event => {
+                onClick={() => {
                   this.props.delete(item);
                 }}
               >
@@ -665,7 +668,7 @@ class EditModal extends React.Component {
                     ? "button is-pulled-left is-warning"
                     : "button is-pulled-left is-success"
                 }
-                onClick={event => {
+                onClick={() => {
                   this.props.done(item);
                 }}
               >
@@ -681,7 +684,7 @@ class EditModal extends React.Component {
                 className="input edit-item"
                 type="text"
                 ref="text"
-                onChange={event => {
+                onChange={() => {
                   if (this.state.saveDisabled) {
                     this.setState({ saveDisabled: false });
                   }
@@ -693,7 +696,7 @@ class EditModal extends React.Component {
                   ref="notes"
                   className="textarea"
                   defaultValue={item.notes || ""}
-                  onChange={event => {
+                  onChange={() => {
                     if (this.state.saveDisabled) {
                       this.setState({ saveDisabled: false });
                     }
@@ -704,7 +707,7 @@ class EditModal extends React.Component {
                   <button
                     type="button"
                     className="button is-small is-text"
-                    onClick={event => {
+                    onClick={() => {
                       this.setState({ editNotes: true }, () => {
                         this.refs.notes.focus();
                       });
@@ -715,6 +718,23 @@ class EditModal extends React.Component {
                 </p>
               )}
             </form>
+
+            {this.state.urls.length ? (
+              <p>
+                <b>URLs:</b>
+                {this.state.urls.map(url => (
+                  <a
+                    key={url}
+                    href={url}
+                    target="_blank"
+                    style={{ marginLeft: 10 }}
+                  >
+                    {url}
+                  </a>
+                ))}
+              </p>
+            ) : null}
+            {this.state.urls.length ? <ul /> : null}
 
             <p>
               <b>Added:</b> {DisplayDate(item.created)}
