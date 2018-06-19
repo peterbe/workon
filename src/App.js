@@ -3,7 +3,7 @@ import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { BrowserRouter as Router, Route, Switch, Link } from "react-router-dom";
 import { observer } from "mobx-react";
 import PullToRefresh from "pulltorefreshjs";
-import getUrls from "get-urls";
+import getUrls from "./vendored/get-urls";
 import "bulma/css/bulma.css";
 import "bulma-badge/dist/bulma-badge.min.css";
 import "csshake/dist/csshake.css";
@@ -610,7 +610,6 @@ class EditModal extends React.Component {
   componentDidMount() {
     this.refs.text.focus();
     window.addEventListener("keydown", this._escapeKey, true);
-    console.log("URLS", this.state.urls);
   }
   componentWillUnmount() {
     window.removeEventListener("keydown", this._escapeKey, true);
