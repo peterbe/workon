@@ -8,7 +8,7 @@ connect-src  kinto.workon.app peterbecom.auth0.com;
 img-src 'self' avatars2.githubusercontent.com;
 script-src 'self';
 style-src 'self';
-font-src 'self';
+font-src 'self' data:;
 manifest-src 'self'
 `.trim();
 
