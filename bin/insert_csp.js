@@ -3,8 +3,8 @@ const fs = require("fs");
 const spawn = require("child_process").spawnSync;
 
 const CSP = `
-default-src 'none' peterbecom.auth0.com;
-connect-src  kinto.workon.app;
+default-src 'none';
+connect-src  kinto.workon.app peterbecom.auth0.com;
 img-src 'self' avatars2.githubusercontent.com;
 script-src 'self';
 style-src 'self';
