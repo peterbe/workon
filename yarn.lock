@@ -1262,13 +1262,13 @@ builtin-status-codes@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/builtin-status-codes/-/builtin-status-codes-3.0.0.tgz#85982878e21b98e1c66425e03d0174788f569ee8"
 
-bulma-badge@1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/bulma-badge/-/bulma-badge-1.0.1.tgz#855a6b4b8213a67201b4bc40bbc1ce1186674618"
+bulma-badge@2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/bulma-badge/-/bulma-badge-2.0.0.tgz#7c7f8fee805400fa35117a43c80f5f9784f3d513"
 
-bulma-timeline@2.0.3:
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/bulma-timeline/-/bulma-timeline-2.0.3.tgz#49b6899f03c4781c8e75a914ecfb63bae443511a"
+bulma-timeline@3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/bulma-timeline/-/bulma-timeline-3.0.0.tgz#2ab7c60618b859941ea1cb5a282fbb41c348ea4c"
 
 bulma@0.7.1:
   version "0.7.1"
@@ -4277,9 +4277,9 @@ kinto-http@4.5.3, kinto-http@>=4.3.3:
     babel-runtime "^6.22.0"
     uuid "^3.0.1"
 
-kinto@11.1.2:
-  version "11.1.2"
-  resolved "https://registry.yarnpkg.com/kinto/-/kinto-11.1.2.tgz#7fe9cbe713c2c70aadb2ff9a8d5c06a4c0dbaec4"
+kinto@11.2.0:
+  version "11.2.0"
+  resolved "https://registry.yarnpkg.com/kinto/-/kinto-11.2.0.tgz#d9914bdb29e59f324a8389fe29bd6665a627794f"
   dependencies:
     babel-plugin-transform-async-to-generator "^6.22.0"
     babel-polyfill "^6.22.0"

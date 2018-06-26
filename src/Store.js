@@ -83,7 +83,7 @@ class TodoStore {
             throw err;
           });
       }),
-      editItemText: action((text, notes, item) => {
+      editItemText: action((item, text, notes) => {
         const thisItemIndex = this.items.findIndex(i => i.id === item.id);
         const thisItem = this.items[thisItemIndex];
         thisItem.text = text;
@@ -94,6 +94,17 @@ class TodoStore {
           throw err;
         });
         this.sync();
+      }),
+      editItemContext: action((item, context) => {
+        const thisItemIndex = this.items.findIndex(i => i.id === item.id);
+        const thisItem = this.items[thisItemIndex];
+        thisItem.context = context;
+        this.items[thisItemIndex] = thisItem;
+        this.collection.update(thisItem).catch(err => {
+          throw err;
+        });
+        this.sync();
+        // XXX opportunity to update list of all contexts
       }),
       addItem: action(text => {
         const now = new Date();
@@ -196,7 +207,27 @@ class TodoStore {
         });
         this.cleanSlateDate = null;
         this.sync();
-      })
+      }),
+      get allContextOptions() {
+        const all = {};
+        this.items.forEach(item => {
+          const context = item.context ? item.context : "";
+          if (!all[context]) {
+            all[context] = 0;
+          }
+          all[context]++;
+        });
+
+        return Object.entries(all)
+          .map(([key, value]) => {
+            return { name: key, count: value };
+          })
+          .sort((a, b) => {
+            if (a.name > b.name) return 1;
+            if (b.name > a.name) return -1;
+            return 0;
+          });
+      }
       // showAllHidden: action(() => {
       //   this.items.forEach(item => {
       //     if (item.hidden) {

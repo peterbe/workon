@@ -3,13 +3,13 @@ import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { BrowserRouter as Router, Route, Switch, Link } from "react-router-dom";
 import { observer } from "mobx-react";
 import PullToRefresh from "pulltorefreshjs";
-import getUrls from "./vendored/get-urls";
 import "bulma/css/bulma.css";
-import "bulma-badge/dist/bulma-badge.min.css";
+import "bulma-badge/dist/css/bulma-badge.min.css";
 import "csshake/dist/csshake.css";
 import TimeLine from "./TimeLine";
 import Auth from "./Auth";
 import Settings from "./Settings";
+import EditModal from "./EditModal";
 import "./App.css";
 import "./Pyro.css";
 import auth0 from "auth0-js";
@@ -40,19 +40,6 @@ window.windExpires = function(hours) {
   let e = JSON.parse(localStorage.expiresAt);
   e -= 1000 * 60 * 60 * hours;
   localStorage.setItem("expiresAt", e);
-};
-
-const DisplayDate = date => {
-  if (date === null) {
-    throw new Error("date is null");
-  }
-  const dateObj = toDate(date);
-  const now = new Date();
-  return (
-    <span title={dateObj.toString()}>
-      {formatDistance(date, now, { addSuffix: true })}
-    </span>
-  );
 };
 
 const NoMatch = ({ location }) => (
@@ -308,7 +295,8 @@ const TodoList = observer(
   class TodoList extends React.Component {
     state = {
       hideDone: JSON.parse(localStorage.getItem("hideDone", "false")),
-      showPyros: false
+      showPyros: false,
+      startInAdvancedMode: false
     };
 
     componentWillUnmount() {
@@ -372,11 +360,17 @@ const TodoList = observer(
     };
 
     editItemText = (text, notes, item) => {
-      store.todos.editItemText(text, notes, item);
+      store.todos.editItemText(item, text, notes);
     };
 
-    toggleEditItem = (item = null) => {
-      store.todos.editItem = item;
+    editItemContext = (context, item) => {
+      store.todos.editItemContext(item, context);
+    };
+
+    toggleEditItem = (item = null, advancedMode = false) => {
+      this.setState({ startInAdvancedMode: advancedMode }, () => {
+        store.todos.editItem = item;
+      });
     };
 
     toggleHideDone = event => {
@@ -461,9 +455,12 @@ const TodoList = observer(
             <EditModal
               item={store.todos.editItem}
               edit={this.editItemText}
+              move={this.editItemContext}
               close={this.toggleEditItem}
               delete={this.deleteItem}
               done={this.doneItem}
+              allContextOptions={store.todos.allContextOptions}
+              startInAdvancedMode={this.state.startInAdvancedMode}
             />
           ) : null}
 
@@ -597,178 +594,6 @@ const ShowSyncLog = observer(
   }
 );
 
-class EditModal extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      saveDisabled: true,
-      editNotes: !!this.props.item.notes,
-      urls: Array.from(getUrls(this.props.item.text))
-    };
-  }
-
-  componentDidMount() {
-    this.refs.text.focus();
-    window.addEventListener("keydown", this._escapeKey, true);
-  }
-  componentWillUnmount() {
-    window.removeEventListener("keydown", this._escapeKey, true);
-  }
-
-  _escapeKey = event => {
-    if (event.defaultPrevented) {
-      return; // Do nothing if the event was already processed
-    }
-    if (event.key === "Escape") {
-      this.props.close();
-    }
-  };
-
-  itemFormSubmit = event => {
-    event.preventDefault();
-    const text = this.refs.text.value.trim();
-    const notes =
-      (this.state.editNotes && this.refs.notes.value.trim()) || null;
-    if (text) {
-      this.props.edit(text, notes, this.props.item);
-      this.props.close();
-    } else {
-      this.props.delete(this.props.item);
-      this.props.close();
-    }
-  };
-  render() {
-    const { item } = this.props;
-    return (
-      <div className="modal is-active">
-        <div
-          className="modal-background"
-          onClick={() => {
-            this.props.close();
-          }}
-        />
-
-        <div className="modal-content">
-          <div className="box" style={{ margin: 0 }}>
-            <div className="is-clearfix" style={{ marginBottom: 20 }}>
-              <button
-                type="button"
-                className="button is-pulled-right is-danger"
-                onClick={() => {
-                  this.props.delete(item);
-                }}
-              >
-                DELETE
-              </button>
-              <button
-                type="button"
-                className={
-                  item.done
-                    ? "button is-pulled-left is-warning"
-                    : "button is-pulled-left is-success"
-                }
-                onClick={() => {
-                  this.props.done(item);
-                }}
-              >
-                <span role="img" aria-label="Toggle done">
-                  ✔️
-                </span>
-                {item.done ? "UNDONE!" : "DONE!"}
-              </button>
-            </div>
-
-            <form onSubmit={this.itemFormSubmit}>
-              <input
-                className="input edit-item"
-                type="text"
-                ref="text"
-                onChange={() => {
-                  if (this.state.saveDisabled) {
-                    this.setState({ saveDisabled: false });
-                  }
-                }}
-                defaultValue={item.text}
-              />
-              {this.state.editNotes ? (
-                <textarea
-                  ref="notes"
-                  className="textarea"
-                  defaultValue={item.notes || ""}
-                  onChange={() => {
-                    if (this.state.saveDisabled) {
-                      this.setState({ saveDisabled: false });
-                    }
-                  }}
-                />
-              ) : (
-                <p>
-                  <button
-                    type="button"
-                    className="button is-small is-text"
-                    onClick={() => {
-                      this.setState({ editNotes: true }, () => {
-                        this.refs.notes.focus();
-                      });
-                    }}
-                  >
-                    Notes?
-                  </button>
-                </p>
-              )}
-            </form>
-
-            {this.state.urls.length ? (
-              <p>
-                <b>URLs:</b>
-                {this.state.urls.map(url => (
-                  <a
-                    key={url}
-                    href={url}
-                    target="_blank"
-                    style={{ marginLeft: 10 }}
-                  >
-                    {url}
-                  </a>
-                ))}
-              </p>
-            ) : null}
-            {this.state.urls.length ? <ul /> : null}
-
-            <p>
-              <b>Added:</b> {DisplayDate(item.created)}
-              <br />
-              {item.created !== item.modified ? (
-                <span>
-                  <b>Edited:</b> {DisplayDate(item.modified)}
-                </span>
-              ) : null}
-            </p>
-
-            <div className="is-clearfix">
-              <button
-                className="button is-success is-pulled-left"
-                onClick={this.itemFormSubmit}
-                disabled={this.state.saveDisabled}
-              >
-                Save
-              </button>
-              <button
-                className="button is-pulled-right"
-                onClick={event => {
-                  this.props.close();
-                }}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-}
-
 const Item = observer(
   class Item extends React.Component {
     state = {
@@ -865,6 +690,7 @@ const Item = observer(
       if (item.done) {
         itemClassName = "strikeout";
       }
+
       return (
         <div
           className="item"
@@ -875,6 +701,13 @@ const Item = observer(
           }
         >
           <FriendlyDateTag datetime={item.created} />
+          <ContextTag
+            context={item.context}
+            onClick={event => {
+              event.preventDefault();
+              this.props.setEditItem(item, true);
+            }}
+          />
           <p
             className={itemClassName}
             title="Click to edit"
@@ -936,4 +769,15 @@ const FriendlyDateTag = ({ datetime }) => {
   }
 
   return <span className="tag is-white is-pulled-right">{text}</span>;
+};
+
+const ContextTag = ({ context, onClick }) => {
+  if (!context) {
+    return null;
+  }
+  return (
+    <span onClick={onClick} className="tag is-light is-pulled-right">
+      {context}
+    </span>
+  );
 };

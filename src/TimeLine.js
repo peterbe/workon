@@ -1,7 +1,7 @@
 import React from "react";
 import { observer } from "mobx-react";
 import store from "./Store";
-import "bulma-timeline/dist/bulma-timeline.min.css";
+import "bulma-timeline/dist/css/bulma-timeline.min.css";
 
 import {
   format,
