@@ -7,7 +7,7 @@ default-src 'none';
 connect-src  kinto.workon.app peterbecom.auth0.com;
 img-src 'self' avatars2.githubusercontent.com;
 script-src 'self';
-style-src 'self';
+style-src 'self' 'unsafe-inline';
 font-src 'self' data:;
 manifest-src 'self'
 `.trim();
