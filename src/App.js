@@ -13,6 +13,7 @@ import EditModal from "./EditModal";
 import "./App.css";
 import "./Pyro.css";
 import auth0 from "auth0-js";
+import Loadable from "react-loading-overlay";
 import {
   OIDC_DOMAIN,
   OIDC_CLIENT_ID,
@@ -52,6 +53,9 @@ const NoMatch = ({ location }) => (
 
 const App = observer(
   class App extends React.Component {
+    state = {
+      loading: true
+    };
     componentDidMount() {
       store.todos.obtain();
       this.authenticate();
@@ -64,6 +68,9 @@ const App = observer(
           }
         }
       });
+      window.setTimeout(() => {
+        this.setState({ loading: false });
+      }, 2000);
     }
 
     componentWillUnmount() {
@@ -196,66 +203,79 @@ const App = observer(
     render() {
       return (
         <Router>
-          <div className="container">
-            <div className="box">
-              {store.user.userInfo ? (
-                <Link to="auth">
-                  <figure
-                    className="image is-32x32 is-pulled-right avatar"
-                    title={`Logged in as ${store.user.userInfo.name}, ${
-                      store.user.userInfo.email
-                    }`}
-                  >
-                    <img src={store.user.userInfo.picture} alt="Avatar" />
-                  </figure>
-                </Link>
-              ) : null}
+          <Loadable
+            active={this.state.loading}
+            spinner
+            background="rgba(256, 256, 256, 0.92)"
+            color="#000"
+            spinnerSize="140px"
+            text="Loading the app..."
+          >
+            <div className="container">
+              <div className="box">
+                {store.user.userInfo ? (
+                  <Link to="auth">
+                    <figure
+                      className="image is-32x32 is-pulled-right avatar"
+                      title={`Logged in as ${store.user.userInfo.name}, ${
+                        store.user.userInfo.email
+                      }`}
+                    >
+                      <img src={store.user.userInfo.picture} alt="Avatar" />
+                    </figure>
+                  </Link>
+                ) : null}
 
-              <Switch>
-                <Route path="/" exact component={TodoList} />
-                <Route path="/timeline" exact component={TimeLine} />
-                <Route
-                  path="/auth"
-                  exact
-                  render={props => (
-                    <Auth {...props} logIn={this.logIn} logOut={this.logOut} />
-                  )}
-                />
-                <Route path="/settings" exact component={Settings} />
-                {/* <Route path="/blogitem/:id" component={EditBlogitem} /> */}
-                <Route component={NoMatch} />
-              </Switch>
-              <nav
-                className="breadcrumb is-centered has-bullet-separator"
-                aria-label="breadcrumbs"
-                style={{
-                  marginTop: 30,
-                  paddingTop: 10
-                }}
-              >
-                <ul>
-                  <li>
-                    <Link to="/">Home</Link>
-                  </li>
-                  <li>
-                    <Link to="/timeline">Time Line</Link>
-                  </li>
-                  <li>
-                    <Link to="/auth">
-                      <AuthLinkText
-                        serverError={store.user.serverError}
-                        userInfo={store.user.userInfo}
+                <Switch>
+                  <Route path="/" exact component={TodoList} />
+                  <Route path="/timeline" exact component={TimeLine} />
+                  <Route
+                    path="/auth"
+                    exact
+                    render={props => (
+                      <Auth
+                        {...props}
+                        logIn={this.logIn}
+                        logOut={this.logOut}
                       />
-                    </Link>
-                    {/* <Link to="/auth">Authentication</Link> */}
-                  </li>
-                  <li>
-                    <Link to="/settings">Settings</Link>
-                  </li>
-                </ul>
-              </nav>
+                    )}
+                  />
+                  <Route path="/settings" exact component={Settings} />
+                  {/* <Route path="/blogitem/:id" component={EditBlogitem} /> */}
+                  <Route component={NoMatch} />
+                </Switch>
+                <nav
+                  className="breadcrumb is-centered has-bullet-separator"
+                  aria-label="breadcrumbs"
+                  style={{
+                    marginTop: 30,
+                    paddingTop: 10
+                  }}
+                >
+                  <ul>
+                    <li>
+                      <Link to="/">Home</Link>
+                    </li>
+                    <li>
+                      <Link to="/timeline">Time Line</Link>
+                    </li>
+                    <li>
+                      <Link to="/auth">
+                        <AuthLinkText
+                          serverError={store.user.serverError}
+                          userInfo={store.user.userInfo}
+                        />
+                      </Link>
+                      {/* <Link to="/auth">Authentication</Link> */}
+                    </li>
+                    <li>
+                      <Link to="/settings">Settings</Link>
+                    </li>
+                  </ul>
+                </nav>
+              </div>
             </div>
-          </div>
+          </Loadable>
         </Router>
       );
     }
