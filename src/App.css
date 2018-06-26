@@ -24,6 +24,9 @@ p.freshness-blurb,
 div.list-container input {
   font-size: 130%;
 }
+input.edit-item {
+  font-size: 120%;
+}
 .box div.item {
   font-size: 130%;
   padding-top: 15px;

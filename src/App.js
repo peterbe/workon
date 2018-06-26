@@ -776,7 +776,7 @@ const ContextTag = ({ context, onClick }) => {
     return null;
   }
   return (
-    <span onClick={onClick} className="tag is-light is-pulled-right">
+    <span onClick={onClick} className="tag is-dark is-pulled-right">
       {context}
     </span>
   );

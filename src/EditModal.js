@@ -70,7 +70,7 @@ export default class EditModal extends React.Component {
 
         <div className="modal-content">
           <div className="box" style={{ margin: 0 }}>
-            <div className="level is-mobile" style={{ marginBottom: 10 }}>
+            <div className="level is-mobile" style={{ marginBottom: 20 }}>
               <div className="level-item has-text-centered">
                 <button
                   type="button"
@@ -129,16 +129,7 @@ export default class EditModal extends React.Component {
               <EditContextDropdown
                 onChangeContext={context => {
                   this.props.move(context, this.props.item);
-                  // If this is new, don't close the edit modal
-                  // const existingNames = this.props.allContextOptions.map(
-                  //   each => each.name
-                  // );
                   this.props.close();
-                  // if (existingNames.includes(context)) {
-                  //   this.props.close();
-                  // } else {
-                  //   console.log("Refresh?");
-                  // }
                 }}
                 contextOptions={this.props.allContextOptions}
                 currentContext={item.context ? item.context : ""}
@@ -177,22 +168,30 @@ export default class EditModal extends React.Component {
             ) : null}
             {this.state.urls.length ? <ul /> : null}
 
-            <div className="is-clearfix">
-              <button
-                className="button is-success is-pulled-left"
-                onClick={this.itemFormSubmit}
-                disabled={this.state.saveDisabled}
-              >
-                Save
-              </button>
-              <button
-                className="button is-pulled-right"
-                onClick={event => {
-                  this.props.close();
-                }}
-              >
-                Cancel
-              </button>
+            <div className="level is-mobile" style={{ marginTop: 25 }}>
+              <div className="level-left">
+                <div className="level-item has-text-left">
+                  <button
+                    className="button is-success"
+                    onClick={this.itemFormSubmit}
+                    disabled={this.state.saveDisabled}
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+              <div className="level-right">
+                <div className="level-item has-text-right">
+                  <button
+                    className="button"
+                    onClick={event => {
+                      this.props.close();
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
             </div>
 
             {this.state.advancedMode ? (
