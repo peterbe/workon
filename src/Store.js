@@ -23,15 +23,9 @@ class TodoStore {
         lastFailure: null
       },
       obtain: action(() => {
-        this.collection.list({ order: "-created" }).then(res => {
+        return this.collection.list({ order: "-created" }).then(res => {
           this.items = res.data;
-          // this.sync();
         });
-        // const items = JSON.parse(localStorage.getItem("items") || "[]");
-        // if (items.length) {
-        //   this.items = items;
-        // }
-        // this.items.replace(this.items.sort((a, b) => b.created - a.created));
       }),
       sync: action(() => {
         // localStorage.setItem("items", JSON.stringify(this.items));
