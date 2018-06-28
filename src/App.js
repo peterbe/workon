@@ -14,6 +14,7 @@ import "./App.css";
 import "./Pyro.css";
 import auth0 from "auth0-js";
 import Loadable from "react-loading-overlay";
+
 import {
   OIDC_DOMAIN,
   OIDC_CLIENT_ID,
@@ -98,40 +99,37 @@ const App = observer(
           window.location.hash = "";
         }
 
+        let startAccessTokenRefreshLoop = !!authResult;
+
         if (!authResult) {
           authResult = JSON.parse(localStorage.getItem("authResult"));
+          if (authResult) {
+            startAccessTokenRefreshLoop = true;
+          }
+          const expiresAt = JSON.parse(localStorage.getItem("expiresAt"));
+          if (expiresAt && expiresAt - new Date().getTime() < 0) {
+            // Oh no! It has expired.
+            authResult = null;
+          }
         }
-
-        // The contents of authResult depend on which authentication parameters were used.
-        // It can include the following:
-        // authResult.accessToken - access token for the API specified by `audience`
-        // authResult.expiresIn - string with the access token's expiration time in seconds
-        // authResult.idToken - ID token JWT containing user profile information
-        this._postProcessAuthResult(authResult);
+        if (authResult) {
+          // The contents of authResult depend on which authentication parameters were used.
+          // It can include the following:
+          // authResult.accessToken - access token for the API specified by `audience`
+          // authResult.expiresIn - string with the access token's expiration time in seconds
+          // authResult.idToken - ID token JWT containing user profile information
+          this._postProcessAuthResult(authResult);
+        }
+        if (startAccessTokenRefreshLoop) {
+          this.accessTokenRefreshLoop();
+        }
       });
     }
 
     _postProcessAuthResult = authResult => {
       if (authResult) {
-        // Conver the accessToken to a user profile so we can
-        // indicate who logged in.
-        const userInfo = JSON.parse(localStorage.getItem("userInfo") || "null");
-        if (userInfo) {
-          store.user.userInfo = userInfo;
-        } else {
-          this.webAuth.client.userInfo(authResult.accessToken, (err, user) => {
-            if (err) {
-              store.user.serverError = err;
-              return console.error(err);
-            }
-            // Now you have the user's information
-            store.user.userInfo = user;
-            // Cache this in the current tab. This assumes that the name
-            // and email doesn't change much.
-            localStorage.setItem("userInfo", JSON.stringify(user));
-            store.user.serverError = null;
-          });
-        }
+        store.user.userInfo = authResult.idTokenPayload;
+        localStorage.removeItem("userInfo"); // DELTE THIS AFTER THE NEXT PROD RELEASE
 
         store.todos.accessToken = authResult.accessToken;
         store.todos.sync();
@@ -144,7 +142,6 @@ const App = observer(
         }
         localStorage.setItem("authResult", JSON.stringify(authResult));
         localStorage.setItem("expiresAt", JSON.stringify(expiresAt));
-        this.accessTokenRefreshLoop();
       }
     };
 
@@ -181,7 +178,7 @@ const App = observer(
     };
 
     logIn = () => {
-      this.webAuth.popup.authorize({
+      this.webAuth.authorize({
         // state: returnUrl,
         state: ""
       });
