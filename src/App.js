@@ -47,12 +47,15 @@ const NoMatch = ({ location }) => (
 const App = observer(
   class App extends React.Component {
     state = {
-      loading: true
+      loading: !sessionStorage.getItem("notFirstTime")
     };
     componentDidMount() {
-      this.stopLoadingTimer = window.setTimeout(() => {
-        this.setState({ loading: false });
-      }, 2000);
+      if (this.state.loading) {
+        this.stopLoadingTimer = window.setTimeout(() => {
+          this.setState({ loading: false });
+        }, 2000);
+      }
+      sessionStorage.setItem("notFirstTime", true);
 
       store.todos.obtain().then(() => {});
 
@@ -178,7 +181,7 @@ const App = observer(
     };
 
     logIn = () => {
-      this.webAuth.authorize({
+      this.webAuth.popup.authorize({
         // state: returnUrl,
         state: ""
       });

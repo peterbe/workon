@@ -27,9 +27,11 @@ export default observer(
     }
 
     componentDidMount() {
-      this.refs.new.focus();
+      if (!sessionStorage.getItem("notFirstTime")) {
+        // If it's the very first time you open this app, focus on the input.
+        this.refs.new.focus();
+      }
       document.title = "Things To Work On";
-      // store.todos.obtain();
     }
 
     itemFormSubmit = event => {
