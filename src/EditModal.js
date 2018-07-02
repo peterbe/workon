@@ -15,6 +15,14 @@ const DisplayDate = date => {
   );
 };
 
+const getItemUrls = item => {
+  const urls = getUrls(item.text);
+  for (let url of getUrls(item.notes || "").values()) {
+    urls.add(url);
+  }
+  return Array.from(urls);
+};
+
 export default class EditModal extends React.Component {
   constructor(props) {
     super(props);
@@ -22,7 +30,7 @@ export default class EditModal extends React.Component {
       saveDisabled: true,
       // editNotes: !!this.props.item.notes,
       advancedMode: !!this.props.startInAdvancedMode || this.props.item.notes,
-      urls: Array.from(getUrls(this.props.item.text))
+      urls: getItemUrls(this.props.item)
     };
   }
 
@@ -159,7 +167,10 @@ export default class EditModal extends React.Component {
                     key={url}
                     href={url}
                     target="_blank"
-                    style={{ marginLeft: 10 }}
+                    style={{
+                      marginLeft: 10,
+                      display: this.state.urls.length > 1 ? "block" : "inline"
+                    }}
                   >
                     {url}
                   </a>
