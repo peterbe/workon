@@ -32,6 +32,12 @@ export default observer(
         this.refs.new.focus();
       }
       document.title = "Things To Work On";
+
+      const reg = /context=(.*)/;
+      if (window.location.hash && reg.test(window.location.hash)) {
+        const found = window.location.hash.match(reg)[1];
+        store.todos.contextFilter = decodeURIComponent(found);
+      }
     }
 
     itemFormSubmit = event => {
@@ -105,7 +111,29 @@ export default observer(
     };
 
     render() {
-      const items = store.todos.items.filter(item => !item.deleted);
+      const allContexts = {
+        "": 0
+      };
+      store.todos.items.forEach(item => {
+        if (item.context) {
+          const context = item.context || "";
+          if (!allContexts[context]) {
+            allContexts[context] = 0;
+          }
+          allContexts[context]++;
+        }
+        allContexts[""]++;
+      });
+      const allContextKeys = Object.keys(allContexts).sort();
+      const items = store.todos.items.filter(item => {
+        if (
+          store.todos.contextFilter &&
+          item.context !== store.todos.contextFilter
+        ) {
+          return false;
+        }
+        return !item.deleted;
+      });
       const visibleItems = items.filter(item => !item.hidden);
       const showItems = visibleItems.filter(item => {
         if (this.state.hideDone) {
@@ -195,9 +223,46 @@ export default observer(
                 className="input add-item"
                 type="text"
                 ref="new"
-                placeholder="What's next??"
+                placeholder="What's next?"
               />
             </form>
+            {allContextKeys.length > 1 ? (
+              <div className="tabs is-small">
+                <ul>
+                  {allContextKeys.map(context => {
+                    return (
+                      <li
+                        key={context}
+                        className={
+                          store.todos.contextFilter === context
+                            ? "is-active"
+                            : null
+                        }
+                      >
+                        <a
+                          href={`#context=${context}`}
+                          onClick={event => {
+                            event.preventDefault();
+                            if (context) {
+                              store.todos.contextFilter = context;
+                              window.location.hash = `#context=${context}`;
+                            } else {
+                              store.todos.contextFilter = null;
+                              window.location.hash = "";
+                            }
+                          }}
+                        >
+                          {context ? context : "All"} ({allContexts[context]})
+                          {/* <span className="tag is-dark">
+                            {context ? context : "All"}
+                          </span> */}
+                        </a>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ) : null}
             <div className="list-container-inner">
               <TransitionGroup>
                 {showItems.map(item => (

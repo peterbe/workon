@@ -17,6 +17,7 @@ class TodoStore {
       editItem: null,
       cleanSlateDate: null,
       accessToken: null,
+      contextFilter: null,
       syncLog: {
         error: null,
         lastSuccess: null,
