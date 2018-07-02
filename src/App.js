@@ -59,7 +59,7 @@ const App = observer(
       }
       sessionStorage.setItem("notFirstTime", true);
 
-      store.todos.obtain().then(() => {});
+      store.todos.obtain();
 
       this.authenticate();
 
@@ -130,8 +130,6 @@ const App = observer(
     _postProcessAuthResult = authResult => {
       if (authResult) {
         store.user.userInfo = authResult.idTokenPayload;
-        localStorage.removeItem("userInfo"); // DELTE THIS AFTER THE NEXT PROD RELEASE
-
         store.todos.accessToken = authResult.accessToken;
         store.todos.sync();
 
@@ -161,6 +159,7 @@ const App = observer(
       const timeToRefresh = age < 0;
 
       if (timeToRefresh) {
+        console.warn("Time to fresh the auth token!");
         this.webAuth.checkSession({}, (err, authResult) => {
           if (err) {
             console.warn("Error trying to checkSession");
