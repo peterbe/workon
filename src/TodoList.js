@@ -234,7 +234,8 @@ export default observer(
                       <li
                         key={context}
                         className={
-                          store.todos.contextFilter === context
+                          store.todos.contextFilter === context ||
+                          (!store.todos.contextFilter && !context)
                             ? "is-active"
                             : null
                         }
