@@ -23,6 +23,7 @@ class TodoStore {
         lastSuccess: null,
         lastFailure: null
       },
+      syncLogs: [],
       obtain: action(() => {
         return this.collection.list({ order: "-created" }).then(res => {
           this.items = res.data;
@@ -44,7 +45,23 @@ class TodoStore {
         this.collection
           .sync(syncOptions)
           .then(data => {
-            this.syncLog.lastSuccess = new Date().getTime();
+            if (data.ok) {
+              this.syncLog.lastSuccess = new Date().getTime();
+            } else {
+              this.syncLog.lastFailure = new Date().getTime();
+            }
+            this.syncLogs.push(data);
+
+            if (data.conflicts.length) {
+              // return handleConflicts(res.conflicts);
+              return Promise.all(
+                data.conflicts.map(conflict => {
+                  return this.collection.resolve(conflict, conflict.remote);
+                })
+              ).then(() => {
+                this.collection.sync(syncOptions);
+              });
+            }
           })
           .catch(error => {
             console.warn("ERROR:", error);

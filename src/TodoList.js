@@ -1,6 +1,7 @@
 import React from "react";
 import { observer } from "mobx-react";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
+import { Link } from "react-router-dom";
 import {
   toDate,
   isSameDay,
@@ -341,36 +342,37 @@ const ShowSyncLog = observer(
     subRender = syncLog => {
       if (!(syncLog.lastSuccess || syncLog.lastFailure)) {
         return (
-          <small
+          <Link
+            to="/auth"
             title="Authenticate to enable backup"
             className="has-text-warning"
           >
             Data <i>not</i> backed up.
-          </small>
+          </Link>
         );
       } else if (
         (syncLog.lastSuccess && !syncLog.lastFailure) ||
         syncLog.lastSuccess > syncLog.lastFailure
       ) {
         return (
-          <small className="has-text-success">
+          <Link to="/synclog" className="has-text-success">
             Data backed up{" "}
             {formatDistance(syncLog.lastSuccess, new Date(), {
               addSuffix: true
             })}.
-          </small>
+          </Link>
         );
       } else if (
         (syncLog.lastFailure && !syncLog.lastSuccess) ||
         syncLog.lastFailure > syncLog.lastSuccess
       ) {
         return (
-          <small className="has-text-danger">
+          <Link to="/synclog" className="has-text-danger">
             Last data backed-up failed{" "}
             {formatDistance(syncLog.lastFailure, new Date(), {
               addSuffix: true
             })}.
-          </small>
+          </Link>
         );
       }
       return <small>{JSON.stringify(store.todos.syncLog)}</small>;

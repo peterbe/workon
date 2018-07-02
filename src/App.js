@@ -9,6 +9,7 @@ import TodoList from "./TodoList";
 import TimeLine from "./TimeLine";
 import Auth from "./Auth";
 import Settings from "./Settings";
+import SyncLog from "./SyncLog";
 
 import "./App.css";
 import "./Pyro.css";
@@ -236,7 +237,7 @@ const App = observer(
                     )}
                   />
                   <Route path="/settings" exact component={Settings} />
-                  {/* <Route path="/blogitem/:id" component={EditBlogitem} /> */}
+                  <Route path="/synclog" exact component={SyncLog} />
                   <Route component={NoMatch} />
                 </Switch>
                 <nav
