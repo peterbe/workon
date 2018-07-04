@@ -5,7 +5,7 @@ const spawn = require("child_process").spawnSync;
 const CSP = `
 default-src 'none';
 connect-src  kinto.workon.app peterbecom.auth0.com;
-img-src 'self' avatars2.githubusercontent.com;
+img-src 'self' avatars2.githubusercontent.com https://*.googleusercontent.com;
 script-src 'self';
 style-src 'self' 'unsafe-inline';
 font-src 'self' data:;
