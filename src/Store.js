@@ -50,6 +50,7 @@ class TodoStore {
             } else {
               this.syncLog.lastFailure = new Date().getTime();
             }
+            data._date = new Date();
             this.syncLogs.push(data);
 
             if (data.conflicts.length) {

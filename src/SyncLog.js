@@ -53,13 +53,16 @@ class Log extends React.PureComponent {
     expand: this.props.first
   };
   render() {
-    const { data } = this.props;
+    const data = Object.assign({}, this.props.data);
     const preStyle = {
       fontSize: "80%"
     };
     if (!this.state.expand) {
       preStyle.maxHeight = 100;
+      preStyle.borderBottom = "1px dashed rgb(140, 140, 140)";
     }
+    const date = data._date;
+    delete data._date;
     return (
       <div
         className="synclog-item"
@@ -80,13 +83,11 @@ class Log extends React.PureComponent {
           {data.ok ? "OK" : "Not OK"}
         </h4>
         <small>
-          Last modified:{" "}
+          Date:{" "}
           <b>
-            {format(data.lastModified, "PPPPpppp")} ({formatDistance(
-              data.lastModified,
-              new Date(),
-              { addSuffix: true }
-            )})
+            {format(date, "PPPPpppp")} ({formatDistance(date, new Date(), {
+              addSuffix: true
+            })})
           </b>
         </small>
         <pre
