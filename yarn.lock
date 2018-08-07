@@ -304,9 +304,9 @@ atob@^2.1.1:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/atob/-/atob-2.1.1.tgz#ae2d5a729477f289d60dd7f96a6314a22dd6c22a"
 
-auth0-js@9.6.1:
-  version "9.6.1"
-  resolved "https://registry.yarnpkg.com/auth0-js/-/auth0-js-9.6.1.tgz#908e1bc5e9a7c6f787b019ad53d7688caaa2f48e"
+auth0-js@9.7.3:
+  version "9.7.3"
+  resolved "https://registry.yarnpkg.com/auth0-js/-/auth0-js-9.7.3.tgz#5d09a703e3758d50ee95d57d05b7f31271c1c821"
   dependencies:
     base64-js "^1.2.0"
     idtoken-verifier "^1.2.0"
@@ -4304,9 +4304,9 @@ kinto-http@4.5.3, kinto-http@>=4.3.3:
     babel-runtime "^6.22.0"
     uuid "^3.0.1"
 
-kinto@11.2.0:
-  version "11.2.0"
-  resolved "https://registry.yarnpkg.com/kinto/-/kinto-11.2.0.tgz#d9914bdb29e59f324a8389fe29bd6665a627794f"
+kinto@11.2.2:
+  version "11.2.2"
+  resolved "https://registry.yarnpkg.com/kinto/-/kinto-11.2.2.tgz#f67d98df27f6f98cade792e6be8e65e6db4e8ca1"
   dependencies:
     babel-plugin-transform-async-to-generator "^6.22.0"
     babel-polyfill "^6.22.0"
@@ -5620,7 +5620,7 @@ promise@^7.1.1:
   dependencies:
     asap "~2.0.3"
 
-prop-types@^15.5.10, prop-types@^15.5.4, prop-types@^15.5.6, prop-types@^15.5.8, prop-types@^15.6.0, prop-types@^15.6.1:
+prop-types@^15.5.10, prop-types@^15.5.4, prop-types@^15.5.6, prop-types@^15.5.8, prop-types@^15.6.0, prop-types@^15.6.1, prop-types@^15.6.2:
   version "15.6.2"
   resolved "https://registry.yarnpkg.com/prop-types/-/prop-types-15.6.2.tgz#05d5ca77b4453e985d60fc7ff8c859094a497102"
   dependencies:
@@ -5796,7 +5796,7 @@ react-error-overlay@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/react-error-overlay/-/react-error-overlay-4.0.0.tgz#d198408a85b4070937a98667f500c832f86bd5d4"
 
-react-lifecycles-compat@^3.0.2:
+react-lifecycles-compat@^3.0.2, react-lifecycles-compat@^3.0.4:
   version "3.0.4"
   resolved "https://registry.yarnpkg.com/react-lifecycles-compat/-/react-lifecycles-compat-3.0.4.tgz#4f1a273afdfc8f3488a8c516bfda78f872352362"
 
@@ -5884,13 +5884,14 @@ react-scripts@1.1.4:
   optionalDependencies:
     fsevents "^1.1.3"
 
-react-transition-group@2.3.1:
-  version "2.3.1"
-  resolved "https://registry.yarnpkg.com/react-transition-group/-/react-transition-group-2.3.1.tgz#31d611b33e143a5e0f2d94c348e026a0f3b474b6"
+react-transition-group@2.4.0:
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/react-transition-group/-/react-transition-group-2.4.0.tgz#1d9391fabfd82e016f26fabd1eec329dbd922b5a"
   dependencies:
     dom-helpers "^3.3.1"
     loose-envify "^1.3.1"
-    prop-types "^15.6.1"
+    prop-types "^15.6.2"
+    react-lifecycles-compat "^3.0.4"
 
 react-transition-group@^1.2.1:
   version "1.2.1"
