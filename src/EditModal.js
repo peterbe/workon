@@ -207,13 +207,15 @@ export default class EditModal extends React.Component {
 
             {this.state.advancedMode ? (
               <p className="is-size-6">
-                <b>Added:</b> {DisplayDate(item.created)}
-                <br />
                 {item.created !== item.modified ? (
                   <span>
                     <b>Edited:</b> {DisplayDate(item.modified)}
                   </span>
-                ) : null}
+                ) : (
+                  <span>
+                    <b>Added:</b> {DisplayDate(item.created)}
+                  </span>
+                )}
               </p>
             ) : null}
           </div>
