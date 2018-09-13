@@ -8,12 +8,13 @@ class TodoStore {
   constructor(rootStore) {
     this.rootStore = rootStore;
 
-    this.db = new Kinto({
-      adapterOptions: {
-        // Going from Kinto.js 11 to 12
-        migrateOldData: true
-      }
-    });
+    this.db = new Kinto();
+    // this.db = new Kinto({
+    //   adapterOptions: {
+    //     // Going from Kinto.js 11 to 12
+    //     migrateOldData: true
+    //   }
+    // });
     this.collection = this.db.collection("todos");
 
     extendObservable(this, {
