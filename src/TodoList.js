@@ -2,6 +2,8 @@ import React from "react";
 import { observer } from "mobx-react";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { Link } from "react-router-dom";
+import play from "audio-play";
+import load from "audio-loader";
 import {
   toDate,
   isSameDay,
@@ -14,6 +16,15 @@ import {
 import EditModal from "./EditModal";
 
 import store from "./Store";
+
+const SOUNDS = {
+  coin: "./sounds/coin.mp3",
+  bump: "./sounds/bump.mp3",
+  ping: "./sounds/ping.mp3",
+  smash: "./sounds/smash.mp3",
+  dead: "./sounds/dead.mp3",
+  jump: "./sounds/jump.mp3"
+};
 
 export default observer(
   class TodoList extends React.Component {
@@ -41,12 +52,34 @@ export default observer(
       }
     }
 
+    _sounds = {};
+    _loadSound = name => {
+      if (this._sounds[name]) {
+        return Promise.resolve(this._sounds[name]);
+      }
+
+      return load(SOUNDS[name]).then(audioBuffer => {
+        this._sounds[name] = audioBuffer;
+        return audioBuffer;
+      });
+    };
+
+    playSound = name => {
+      if (!SOUNDS[name]) {
+        throw new Error(`Unrecognized sound '${name}'.`);
+      }
+      this._loadSound(name).then(() => {
+        play(this._sounds[name]);
+      });
+    };
+
     itemFormSubmit = event => {
       event.preventDefault();
       const text = this.refs.new.value.trim();
       if (text) {
         store.todos.addItem(text);
         this.refs.new.value = "";
+        this.playSound("ping");
       }
     };
 
@@ -64,12 +97,16 @@ export default observer(
       const wasNotDone = !item.done;
       store.todos.doneItem(item);
       if (wasNotDone) {
+        this.playSound("coin");
         this.showPyrosTemporarily();
+      } else {
+        this.playSound("bump");
       }
     };
 
     deleteItem = item => {
       store.todos.deleteItem(item);
+      this.playSound("smash");
       if (this.giveupUndoTimeout) {
         window.clearTimeout(this.giveupUndoTimeout);
       }
@@ -84,11 +121,19 @@ export default observer(
 
     undoDelete = () => {
       // store.todos.undoDelete();
-      console.log("UNDO DELETE ON", store.todos.deletedItem);
+      // console.log("UNDO DELETE ON", store.todos.deletedItem);
       store.todos.deleteItem(store.todos.deletedItem);
+      this.playSound("ping");
     };
+
     undoCleanSlate = event => {
       store.todos.undoCleanSlate();
+      this.playSound("dead");
+    };
+
+    cleanSlate = even => {
+      store.todos.cleanSlate();
+      this.playSound("jump");
     };
 
     editItemText = (text, notes, item) => {
@@ -293,9 +338,7 @@ export default observer(
               <div className="column">
                 <button
                   className="button is-info is-fullwidth"
-                  onClick={event => {
-                    store.todos.cleanSlate();
-                  }}
+                  onClick={this.cleanSlate}
                 >
                   Clean Slate
                 </button>
@@ -359,7 +402,8 @@ const ShowSyncLog = observer(
             Data backed up{" "}
             {formatDistance(syncLog.lastSuccess, new Date(), {
               addSuffix: true
-            })}.
+            })}
+            .
           </Link>
         );
       } else if (
@@ -371,7 +415,8 @@ const ShowSyncLog = observer(
             Last data backed-up failed{" "}
             {formatDistance(syncLog.lastFailure, new Date(), {
               addSuffix: true
-            })}.
+            })}
+            .
           </Link>
         );
       }

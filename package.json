@@ -5,6 +5,8 @@
   "author": "Peter Bengtsson",
   "license": "MIT",
   "dependencies": {
+    "audio-loader": "1.0.3",
+    "audio-play": "2.2.1",
     "auth0-js": "9.7.3",
     "bulma": "0.7.1",
     "bulma-badge": "2.0.0",
