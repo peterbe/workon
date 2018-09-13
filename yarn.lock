@@ -4304,9 +4304,9 @@ kinto-http@4.5.3, kinto-http@>=4.3.3:
     babel-runtime "^6.22.0"
     uuid "^3.0.1"
 
-kinto@11.2.2:
-  version "11.2.2"
-  resolved "https://registry.yarnpkg.com/kinto/-/kinto-11.2.2.tgz#f67d98df27f6f98cade792e6be8e65e6db4e8ca1"
+kinto@12.0.0:
+  version "12.0.0"
+  resolved "https://registry.yarnpkg.com/kinto/-/kinto-12.0.0.tgz#c81153635241f31c296239a3fff89025dcc79eb2"
   dependencies:
     babel-plugin-transform-async-to-generator "^6.22.0"
     babel-polyfill "^6.22.0"
