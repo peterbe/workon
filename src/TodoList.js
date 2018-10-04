@@ -14,6 +14,7 @@ import {
 } from "date-fns/esm";
 
 import EditModal from "./EditModal";
+import { ContextTag } from "./Common";
 
 import store from "./Store";
 
@@ -607,15 +608,4 @@ const FriendlyDateTag = ({ datetime }) => {
   }
 
   return <span className="tag is-white is-pulled-right">{text}</span>;
-};
-
-const ContextTag = ({ context, onClick }) => {
-  if (!context) {
-    return null;
-  }
-  return (
-    <span onClick={onClick} className="tag is-dark is-pulled-right">
-      {context}
-    </span>
-  );
 };

@@ -53,6 +53,10 @@ export default class EditModal extends React.Component {
 
   itemFormSubmit = event => {
     event.preventDefault();
+    this.itemFormSave();
+  };
+
+  itemFormSave = () => {
     const text = this.refs.text.value.trim();
     const notes =
       (this.state.advancedMode && this.refs.notes.value.trim()) || null;
@@ -133,16 +137,17 @@ export default class EditModal extends React.Component {
                 defaultValue={item.text}
               />
             </form>
-            {this.state.advancedMode ? (
+            {this.state.advancedMode && (
               <EditContextDropdown
                 onChangeContext={context => {
                   this.props.move(context, this.props.item);
-                  this.props.close();
+                  this.itemFormSave();
+                  // this.props.close();
                 }}
                 contextOptions={this.props.allContextOptions}
                 currentContext={item.context ? item.context : ""}
               />
-            ) : null}
+            )}
             {this.state.advancedMode ? (
               <form onSubmit={this.itemFormSubmit}>
                 <textarea
@@ -167,6 +172,7 @@ export default class EditModal extends React.Component {
                     key={url}
                     href={url}
                     target="_blank"
+                    rel="noopener noreferrer"
                     style={{
                       marginLeft: 10,
                       display: this.state.urls.length > 1 ? "block" : "inline"
@@ -235,22 +241,20 @@ class EditContextDropdown extends React.PureComponent {
   formSubmit = event => {
     event.preventDefault();
     const newContext = this.refs.newcontext.value.trim();
-    // console.log("newContext", newContext);
     this.props.onChangeContext(newContext);
   };
   render() {
     return (
-      <form onSubmit={this.formSubmit}>
+      <form onSubmit={this.formSubmit} style={{ marginBottom: 4 }}>
         <div className={this.state.opened ? "dropdown is-active" : "dropdown"}>
           <div className="dropdown-trigger">
             <button
               type="button"
-              className="button is-fullwidth"
+              className="button"
               aria-haspopup="true"
               aria-controls="dropdown-menu"
               onClick={event => {
                 event.preventDefault();
-                // console.log("DROP DOWN BUTTON PRESSED");
                 const wasOpen = !!this.state.opened;
                 this.setState({ opened: !this.state.opened }, () => {
                   if (wasOpen && this.state.addNew) {
