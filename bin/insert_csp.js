@@ -4,7 +4,7 @@ const crypto = require("crypto");
 
 const CSP_TEMPLATE = `
 default-src 'none';
-connect-src workon.app kinto.workon.app peterbecom.auth0.com;
+connect-src 'self' kinto.workon.app peterbecom.auth0.com;
 frame-src peterbecom.auth0.com;
 img-src 'self' avatars2.githubusercontent.com https://*.googleusercontent.com;
 script-src 'self'%SCRIPT_NONCES%;
@@ -19,17 +19,20 @@ let html = fs.readFileSync(htmlFile, "utf8");
 
 let nonces = "";
 let csp = CSP_TEMPLATE;
-html.match(/<script>.*<\/script>/g).forEach(scriptTag => {
-  const hash = crypto.createHash("sha256");
-  hash.update(scriptTag);
-  const nonce = hash.digest("hex").substring(0, 12);
-  nonces += ` 'nonce-${nonce}'`;
-  const newScriptTag = scriptTag.replace(
-    /<script>/,
-    `<script nonce="${nonce}">`
-  );
-  html = html.replace(scriptTag, newScriptTag);
-});
+const matches = html.match(/<script>.*<\/script>/g);
+if (matches) {
+  matches.forEach(scriptTag => {
+    const hash = crypto.createHash("sha256");
+    hash.update(scriptTag);
+    const nonce = hash.digest("hex").substring(0, 12);
+    nonces += ` 'nonce-${nonce}'`;
+    const newScriptTag = scriptTag.replace(
+      /<script>/,
+      `<script nonce="${nonce}">`
+    );
+    html = html.replace(scriptTag, newScriptTag);
+  });
+}
 csp = csp.replace(/%SCRIPT_NONCES%/, nonces);
 
 const metatag = `
