@@ -20,10 +20,9 @@ let html = fs.readFileSync(htmlFile, "utf8");
 let nonces = "";
 let csp = CSP_TEMPLATE;
 html.match(/<script>.*<\/script>/g).forEach(scriptTag => {
-  var md5sum = crypto.createHash("sha256");
-  md5sum.update(scriptTag);
-  // console.log(md5sum.digest("hex"));
-  const nonce = md5sum.digest("hex").substring(0, 12);
+  const hash = crypto.createHash("sha256");
+  hash.update(scriptTag);
+  const nonce = hash.digest("hex").substring(0, 12);
   nonces += ` 'nonce-${nonce}'`;
   const newScriptTag = scriptTag.replace(
     /<script>/,
@@ -38,7 +37,8 @@ const metatag = `
 `
   .replace(/\n/g, "")
   .trim();
-if (html.search(metatag) > -1) throw new Error("already has metatag in HTML");
+if (html.search(metatag) > -1)
+  throw new Error("already has CSP metatag in HTML");
 const anchor = '<meta charset="utf-8">';
 const newHtml = html.replace(anchor, `${anchor}${metatag}`);
 fs.writeFileSync(htmlFile, newHtml, "utf8");
