@@ -7,7 +7,7 @@ default-src 'none';
 connect-src 'self' kinto.workon.app peterbecom.auth0.com;
 frame-src peterbecom.auth0.com;
 img-src 'self' avatars2.githubusercontent.com https://*.googleusercontent.com;
-script-src 'self'%SCRIPT_NONCES%;
+script-src 'self'%SCRIPT_HASHES%;
 style-src 'self' 'unsafe-inline';
 font-src 'self' data:;
 manifest-src 'self'
@@ -17,23 +17,18 @@ const htmlFile = process.argv[2];
 if (!htmlFile) throw new Error("missing file argument");
 let html = fs.readFileSync(htmlFile, "utf8");
 
-let nonces = "";
+let hashes = "";
 let csp = CSP_TEMPLATE;
 const matches = html.match(/<script>.*<\/script>/g);
 if (matches) {
   matches.forEach(scriptTag => {
     const hash = crypto.createHash("sha256");
-    hash.update(scriptTag);
-    const nonce = hash.digest("hex").substring(0, 12);
-    nonces += ` 'nonce-${nonce}'`;
-    const newScriptTag = scriptTag.replace(
-      /<script>/,
-      `<script nonce="${nonce}">`
-    );
-    html = html.replace(scriptTag, newScriptTag);
+    hash.update(scriptTag.replace(/<script>/, "").replace("</script>", ""));
+    const digest = hash.digest("hex");
+    hashes += ` 'sha256-${digest.toString("base64")}'`;
   });
 }
-csp = csp.replace(/%SCRIPT_NONCES%/, nonces);
+csp = csp.replace(/%SCRIPT_HASHES%/, hashes);
 
 const metatag = `
   <meta http-equiv="Content-Security-Policy" content="${csp}">
