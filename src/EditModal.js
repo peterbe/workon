@@ -1,4 +1,11 @@
 import React from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faAngleDown,
+  faAngleUp,
+  faCheck,
+  faUndo
+} from "@fortawesome/free-solid-svg-icons";
 import getUrls from "./vendored/get-urls";
 import { toDate, formatDistance } from "date-fns/esm";
 
@@ -93,9 +100,10 @@ export default class EditModal extends React.Component {
                     this.props.done(item);
                   }}
                 >
-                  <span role="img" aria-label="Toggle done">
+                  {/* <span role="img" aria-label="Toggle done">
                     ✔️
-                  </span>
+                  </span> */}
+                  <FontAwesomeIcon icon={item.done ? faUndo : faCheck} />{" "}
                   {item.done ? "UNDONE!" : "DONE!"}
                 </button>
               </div>
@@ -266,9 +274,10 @@ class EditContextDropdown extends React.PureComponent {
               <span>
                 {this.state.opened ? "Close" : "Move to a different context"}
               </span>
-              <span className="icon is-small">
-                <i className="fas fa-angle-down" aria-hidden="true" />
-              </span>
+              <FontAwesomeIcon
+                icon={this.state.opened ? faAngleUp : faAngleDown}
+                style={{ marginLeft: 10 }}
+              />
             </button>
           </div>
           <div className="dropdown-menu" id="dropdown-menu" role="menu">
