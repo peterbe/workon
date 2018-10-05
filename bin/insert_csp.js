@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 const fs = require("fs");
-const spawn = require("child_process").spawnSync;
+const crypto = require("crypto");
 
-const CSP = `
+const CSP_TEMPLATE = `
 default-src 'none';
 connect-src workon.app kinto.workon.app peterbecom.auth0.com;
 frame-src peterbecom.auth0.com;
 img-src 'self' avatars2.githubusercontent.com https://*.googleusercontent.com;
-script-src 'self';
+script-src 'self'%SCRIPT_NONCES%;
 style-src 'self' 'unsafe-inline';
 font-src 'self' data:;
 manifest-src 'self'
@@ -15,9 +15,26 @@ manifest-src 'self'
 
 const htmlFile = process.argv[2];
 if (!htmlFile) throw new Error("missing file argument");
-const html = fs.readFileSync(htmlFile, "utf8");
+let html = fs.readFileSync(htmlFile, "utf8");
+
+let nonces = "";
+let csp = CSP_TEMPLATE;
+html.match(/<script>.*<\/script>/g).forEach(scriptTag => {
+  var md5sum = crypto.createHash("sha256");
+  md5sum.update(scriptTag);
+  // console.log(md5sum.digest("hex"));
+  const nonce = md5sum.digest("hex").substring(0, 12);
+  nonces += ` 'nonce-${nonce}'`;
+  const newScriptTag = scriptTag.replace(
+    /<script>/,
+    `<script nonce="${nonce}">`
+  );
+  html = html.replace(scriptTag, newScriptTag);
+});
+csp = csp.replace(/%SCRIPT_NONCES%/, nonces);
+
 const metatag = `
-  <meta http-equiv="Content-Security-Policy" content="${CSP}">
+  <meta http-equiv="Content-Security-Policy" content="${csp}">
 `
   .replace(/\n/g, "")
   .trim();
