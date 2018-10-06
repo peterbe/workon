@@ -14,7 +14,7 @@ if (occurances !== 1) {
   throw new Error(`Not sure how to deal that! (${occurances} oncurrances)`);
 }
 const uri = assets["runtime~main.js"];
-newHtml = html.replace(
+const newHtml = html.replace(
   /<script>.*?<\/script>/,
   `<script src="${uri}"></script>`
 );
