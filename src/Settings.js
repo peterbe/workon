@@ -1,5 +1,6 @@
 import React from "react";
 import { observer } from "mobx-react";
+import { formatDistance } from "date-fns/esm";
 
 import store from "./Store";
 
@@ -15,11 +16,42 @@ const Settings = observer(
       this.dismounted = true;
     }
 
+    getVersionData = () => {
+      const element = document.querySelector("#_version");
+      return Object.assign({}, element.dataset);
+    };
+
     render() {
+      const data = this.getVersionData();
+
       return (
         <div>
           <h1>{this.pageTitle}</h1>
           <DeleteItAll />
+
+          <p style={{ textAlign: "center" }}>
+            Current version:{" "}
+            <a
+              href={`https://github.com/peterbe/workon/commit/${data.commit}`}
+              title={data.date}
+            >
+              {data.commit.slice(0, 7)}
+            </a>{" "}
+            <small>
+              (
+              {formatDistance(data.date, new Date(), {
+                addSuffix: true
+              })}
+              )
+            </small>{" "}
+            <a
+              href="https://whatsdeployed.io/?owner=peterbe&repo=workon&name%5B%5D=Prod&url%5B%5D=https%3A%2F%2Fworkon.app%2Fversion.json"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Whatsdeployed
+            </a>
+          </p>
         </div>
       );
     }

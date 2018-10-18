@@ -9,4 +9,6 @@ REACT_APP_KINTO_URL=https://kinto.workon.app/v1 yarn run build
 
 ./bin/update_version.js > build/version.json
 
+./bin/insert_version.js build/version.json build/index.html
+
 gh-pages --add --dist build/

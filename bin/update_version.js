@@ -11,15 +11,19 @@ const spawnStr = (cmd, ...args) => {
 };
 const version = spawnStr("git", ["describe", "--always", "--tag"]);
 
-const commitRaw = spawnStr("git", ["log", "--pretty=format:'%H'", "-n", "1"]);
-const commit = commitRaw.slice(1, commitRaw.length - 1);
+const logRaw = spawnStr("git", ["log", "--pretty=format:'%H--%cI'", "-n", "1"]);
+
+const log = logRaw.slice(1, logRaw.length - 1);
+const commit = log.split("--")[0];
+const date = log.split("--")[1];
 
 console.log(
   JSON.stringify(
     {
       name,
       version,
-      commit
+      commit,
+      date
     },
     undefined,
     2
