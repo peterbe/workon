@@ -60,14 +60,28 @@ class TodoStore {
             this.syncLogs.push(data);
 
             if (data.conflicts.length) {
-              // return handleConflicts(res.conflicts);
+              console.warn(`There are ${data.conflicts.length} conflicts.`);
               return Promise.all(
                 data.conflicts.map(conflict => {
                   return this.collection.resolve(conflict, conflict.remote);
                 })
-              ).then(() => {
-                this.collection.sync(syncOptions);
-              });
+              )
+                .then(() => {
+                  console.log("Conflicts successfully resolved.");
+                  this.collection
+                    .sync(syncOptions)
+                    .then(() => {
+                      console.log(
+                        "Server sync successful after conflict resolution."
+                      );
+                    })
+                    .catch(err => {
+                      console.log("Server sync failed.", err);
+                    });
+                })
+                .catch(err => {
+                  console.warn("Attempt to resolve all conflicts failed.", err);
+                });
             }
           })
           .catch(error => {
