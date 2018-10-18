@@ -15,6 +15,7 @@
     "bulma": "0.7.2",
     "bulma-badge": "2.0.0",
     "bulma-timeline": "3.0.0",
+    "bulma-toast": "1.3.0",
     "csshake": "1.5.3",
     "date-fns": "2.0.0-alpha.9",
     "get-urls": "8.0.0",
