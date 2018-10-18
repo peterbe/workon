@@ -81,6 +81,7 @@ class TodoStore {
                 })
                 .catch(err => {
                   console.warn("Attempt to resolve all conflicts failed.", err);
+                  throw err;
                 });
             }
           })
