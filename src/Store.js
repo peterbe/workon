@@ -86,6 +86,15 @@ class TodoStore {
           })
           .catch(error => {
             console.warn("ERROR:", error);
+            if (
+              error.message.includes(
+                "Data provided to an operation does not meet requirements."
+              )
+            ) {
+              // XXX Debugging for https://github.com/peterbe/workon/issues/6
+              throw error;
+            }
+
             if (error.message.includes("flushed")) {
               return this.collection.resetSyncStatus().then(_ => {
                 this.collection.sync();
