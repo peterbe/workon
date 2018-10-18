@@ -1,4 +1,4 @@
-Experimental project to build a nice todo-list looking thing in React.
+[![What's Deployed](https://img.shields.io/badge/whatsdeployed-prod-green.svg)](https://whatsdeployed.io/s-58R)
 
 ## Local development
 
