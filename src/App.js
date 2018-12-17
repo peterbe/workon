@@ -162,8 +162,13 @@ const App = observer(
         console.warn("Time to fresh the auth token!");
         this.webAuth.checkSession({}, (err, authResult) => {
           if (err) {
-            console.warn("Error trying to checkSession");
-            return console.error(err);
+            if (err.error === "login_required") {
+              console.warn("Error in checkSession requires a new login");
+              return this.logIn();
+            } else {
+              console.warn("Error trying to checkSession");
+              return console.error(err);
+            }
           }
           this._postProcessAuthResult(authResult);
         });
