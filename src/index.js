@@ -10,6 +10,10 @@ ReactDOM.render(<App />, document.getElementById("root"));
 
 serviceWorker.register({
   onUpdate: registration => {
+    // XXX I don't think it's enough to reload the page
+    // because the user has to actually close all tabs first.
+    // You need to 'registration.waiting.postMessage("skipWaiting");'
+    // followed by a reload.
     toast({
       message: "New version available if you refresh the page.",
       type: "is-info",
