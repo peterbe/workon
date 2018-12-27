@@ -1,4 +1,4 @@
-import { action, extendObservable } from "mobx";
+import { action, extendObservable, toJS } from "mobx";
 import { KINTO_URL } from "./Config";
 import Kinto from "kinto";
 
@@ -36,7 +36,6 @@ class TodoStore {
         });
       }),
       sync: action(() => {
-        // localStorage.setItem("items", JSON.stringify(this.items));
         if (!this.accessToken) {
           console.warn("No accessToken, no remote sync.");
           return;
@@ -133,21 +132,29 @@ class TodoStore {
         thisItem.notes = notes;
         thisItem.modified = new Date().getTime();
         this.items[thisItemIndex] = thisItem;
-        this.collection.update(thisItem).catch(err => {
-          throw err;
-        });
-        this.sync();
+        this.collection
+          .update(this.cleanBeforeUpdating(thisItem))
+          .catch(err => {
+            throw err;
+          })
+          .then(() => {
+            this.sync();
+          });
       }),
       editItemContext: action((item, context) => {
         const thisItemIndex = this.items.findIndex(i => i.id === item.id);
         const thisItem = this.items[thisItemIndex];
         thisItem.context = context;
         this.items[thisItemIndex] = thisItem;
-        this.collection.update(thisItem).catch(err => {
-          throw err;
-        });
-        this.sync();
-        // XXX opportunity to update list of all contexts
+        this.collection
+          .update(this.cleanBeforeUpdating(thisItem))
+          .catch(err => {
+            throw err;
+          })
+          .then(() => {
+            this.sync();
+            // XXX opportunity to update list of all contexts
+          });
       }),
       addItem: action(text => {
         const now = new Date();
@@ -193,7 +200,7 @@ class TodoStore {
           this.deletedItem = item;
         }
         this.collection
-          .update(thisItem)
+          .update(this.cleanBeforeUpdating(thisItem))
           .then(res => {
             this.items[thisItemIndex] = thisItem;
             this.sync();
@@ -213,7 +220,7 @@ class TodoStore {
         this.items[thisItemIndex] = thisItem;
         this.editItem = null;
         this.collection
-          .update(thisItem)
+          .update(this.cleanBeforeUpdating(thisItem))
           .then(() => {
             this.sync();
           })
@@ -221,15 +228,42 @@ class TodoStore {
             throw err;
           });
       }),
+      togglePinnedItem: action(item => {
+        const thisItemIndex = this.items.findIndex(i => i.id === item.id);
+        const thisItem = this.items[thisItemIndex];
+        if (thisItem.pinned) {
+          thisItem.pinned = null;
+        } else {
+          thisItem.pinned = new Date().getTime();
+        }
+        this.items[thisItemIndex] = thisItem;
+        this.collection
+          .update(this.cleanBeforeUpdating(thisItem))
+          .then(() => {
+            this.sync();
+          })
+          .catch(err => {
+            throw err;
+          });
+      }),
+      cleanBeforeUpdating: item => {
+        const plain = toJS(item);
+        if (plain.last_modified) {
+          delete plain.last_modified;
+        }
+        return plain;
+      },
       cleanSlate: action(() => {
         // Mark all that are NOT hidden as hidden now.
         const now = new Date().getTime();
         this.items.forEach(item => {
-          if (!item.hidden) {
+          if (!item.hidden && !item.pinned) {
             item.hidden = now;
-            this.collection.update(item).catch(err => {
-              throw err;
-            });
+            this.collection
+              .update(this.cleanBeforeUpdating(item))
+              .catch(err => {
+                throw err;
+              });
           }
         });
         this.cleanSlateDate = now;
@@ -243,9 +277,11 @@ class TodoStore {
               (!this.cleanSlateDate && item.hidden))
           ) {
             item.hidden = null;
-            this.collection.update(item).catch(err => {
-              throw err;
-            });
+            this.collection
+              .update(this.cleanBeforeUpdating(item))
+              .catch(err => {
+                throw err;
+              });
           }
         });
         this.cleanSlateDate = null;
@@ -271,18 +307,6 @@ class TodoStore {
             return 0;
           });
       }
-      // showAllHidden: action(() => {
-      //   this.items.forEach(item => {
-      //     if (item.hidden) {
-      //       item.hidden = null;
-      //       this.collection.update(item).catch(err => {
-      //         throw err;
-      //       });
-      //     }
-      //   });
-      //   this.cleanSlateDate = null;
-      //   this.sync();
-      // })
     });
   }
 }

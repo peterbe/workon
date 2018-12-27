@@ -41,7 +41,7 @@ class ListAll extends React.PureComponent {
       <div>
         <h2 className="title">{items.length} Sync Attempts</h2>
         {items.map((data, i) => (
-          <Log key={data.lastModified} data={data} first={!i} />
+          <Log key={data._date} data={data} first={!i} />
         ))}
       </div>
     );
@@ -85,9 +85,11 @@ class Log extends React.PureComponent {
         <small>
           Date:{" "}
           <b>
-            {format(date, "PPPPpppp")} ({formatDistance(date, new Date(), {
+            {format(date, "PPPPpppp")} (
+            {formatDistance(date, new Date(), {
               addSuffix: true
-            })})
+            })}
+            )
           </b>
         </small>
         <pre
