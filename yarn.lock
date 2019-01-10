@@ -8457,11 +8457,6 @@ pull-stream@^3.4.4, pull-stream@^3.4.5:
   resolved "https://registry.yarnpkg.com/pull-stream/-/pull-stream-3.6.9.tgz#c774724cd63bc0984c3695f74c819aa02e977320"
   integrity sha512-hJn4POeBrkttshdNl0AoSCVjMVSuBwuHocMerUdoZ2+oIUzrWHFTwJMlbHND7OiKLVgvz6TFj8ZUVywUMXccbw==
 
-pulltorefreshjs@0.1.14:
-  version "0.1.14"
-  resolved "https://registry.yarnpkg.com/pulltorefreshjs/-/pulltorefreshjs-0.1.14.tgz#45f9f33283c1d62ee74b6e0b64fda0346838ea86"
-  integrity sha512-3Z6jSXMcb/qsly0A+IOA3LUanF8GeL5XYh81yAoHtq4lLfs3kGAAh8KW6gBbJy/W0NY7G/WTUA+bw0s2Zw1+7Q==
-
 pump@^2.0.0, pump@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/pump/-/pump-2.0.1.tgz#12399add6e4cf7526d973cbc8b5ce2e2908b3909"

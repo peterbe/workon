@@ -24,7 +24,6 @@
     "kinto-http": "4.6.1",
     "mobx": "5.8.0",
     "mobx-react": "5.4.3",
-    "pulltorefreshjs": "0.1.14",
     "react": "16.6.3",
     "react-dom": "16.6.3",
     "react-linkify": "0.2.2",

@@ -1,7 +1,6 @@
 import React from "react";
 import { BrowserRouter as Router, Route, Switch, Link } from "react-router-dom";
 import { observer } from "mobx-react";
-import PullToRefresh from "pulltorefreshjs";
 import "bulma/css/bulma.css";
 import "bulma-badge/dist/css/bulma-badge.min.css";
 import "csshake/dist/csshake.css";
@@ -62,15 +61,6 @@ const App = observer(
       store.todos.obtain();
 
       this.authenticate();
-
-      this.pullToRefresh = PullToRefresh.init({
-        mainElement: "body",
-        onRefresh: () => {
-          if (store.todos.accessToken) {
-            store.todos.sync();
-          }
-        }
-      });
     }
 
     componentWillUnmount() {
