@@ -151,6 +151,11 @@ export default observer(
       });
     };
 
+    togglePinnedItem = item => {
+      store.todos.togglePinnedItem(item);
+      // console.warn("TOGGLE PINNED!", item);
+    };
+
     toggleHideDone = event => {
       this.setState({ hideDone: !this.state.hideDone }, () => {
         localStorage.setItem("hideDone", JSON.stringify(this.state.hideDone));
@@ -327,6 +332,7 @@ export default observer(
                       doneItem={this.doneItem}
                       editItemText={this.editItemText}
                       setEditItem={this.toggleEditItem}
+                      togglePinnedItem={this.togglePinnedItem}
                     />
                   </CSSTransition>
                 ))}
@@ -540,6 +546,12 @@ const Item = observer(
           }
         >
           <FriendlyDateTag datetime={item.created} />
+          <PinItemTag
+            pinned={item.pinned}
+            toggle={() => {
+              this.props.togglePinnedItem(item);
+            }}
+          />
           <ContextTag
             context={item.context}
             onClick={event => {
@@ -609,3 +621,19 @@ const FriendlyDateTag = ({ datetime }) => {
 
   return <span className="tag is-white is-pulled-right">{text}</span>;
 };
+
+function PinItemTag({ pinned, toggle }) {
+  return (
+    <a
+      href="/"
+      className="tag is-white is-pulled-right pin-toggle"
+      title="Pinned items don't disappear when make a clean slate"
+      onClick={event => {
+        event.preventDefault();
+        toggle();
+      }}
+    >
+      {pinned ? "Pinned" : "Pin?"}
+    </a>
+  );
+}
