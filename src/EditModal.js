@@ -24,7 +24,9 @@ const DisplayDate = date => {
 
 const getItemUrls = item => {
   const urls = getUrls(item.text);
-  for (let url of getUrls(item.notes || "").values()) {
+  for (let url of getUrls(item.notes || "", {
+    stripHash: false
+  }).values()) {
     urls.add(url);
   }
   return Array.from(urls);
@@ -191,6 +193,8 @@ export default class EditModal extends React.Component {
                 ))}
               </p>
             ) : null}
+
+            {/* What's this for?! */}
             {this.state.urls.length ? <ul /> : null}
 
             <div className="level is-mobile" style={{ marginTop: 25 }}>
