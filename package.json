@@ -5,13 +5,13 @@
   "author": "Peter Bengtsson",
   "license": "MIT",
   "dependencies": {
-    "@babel/runtime": "7.2.0",
+    "@babel/runtime": "7.3.1",
     "@fortawesome/fontawesome-svg-core": "1.2.12",
     "@fortawesome/free-solid-svg-icons": "5.6.3",
-    "@fortawesome/react-fontawesome": "0.1.3",
+    "@fortawesome/react-fontawesome": "0.1.4",
     "audio-loader": "1.0.3",
     "audio-play": "2.2.1",
-    "auth0-js": "9.8.2",
+    "auth0-js": "9.9.0",
     "bulma": "0.7.2",
     "bulma-badge": "2.0.0",
     "bulma-timeline": "3.0.0",
@@ -22,7 +22,7 @@
     "gh-pages": "2.0.1",
     "kinto": "12.2.4",
     "kinto-http": "4.6.1",
-    "mobx": "5.8.0",
+    "mobx": "5.9.0",
     "mobx-react": "5.4.3",
     "react": "16.7.0",
     "react-dom": "16.7.0",
@@ -30,7 +30,7 @@
     "react-loading-overlay": "1.0.1",
     "react-router-dom": "4.3.1",
     "react-scripts": "2.1.3",
-    "react-transition-group": "2.5.2"
+    "react-transition-group": "2.5.3"
   },
   "scripts": {
     "start": "react-scripts start",
