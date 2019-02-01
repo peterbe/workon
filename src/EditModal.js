@@ -37,8 +37,8 @@ export default class EditModal extends React.Component {
     super(props);
     this.state = {
       saveDisabled: true,
-      // editNotes: !!this.props.item.notes,
-      advancedMode: !!this.props.startInAdvancedMode || this.props.item.notes,
+      // advancedMode: !!this.props.startInAdvancedMode || this.props.item.notes,
+      advancedMode: true,
       urls: getItemUrls(this.props.item)
     };
   }
