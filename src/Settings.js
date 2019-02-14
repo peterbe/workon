@@ -45,11 +45,11 @@ const Settings = observer(
               )
             </small>{" "}
             <a
-              href="https://whatsdeployed.io/?owner=peterbe&repo=workon&name%5B%5D=Prod&url%5B%5D=https%3A%2F%2Fworkon.app%2Fversion.json"
+              href="https://whatsdeployed.io/s/58R"
               target="_blank"
               rel="noopener noreferrer"
             >
-              Whatsdeployed
+              Whatsdeployed?
             </a>
           </p>
         </div>

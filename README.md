@@ -1,4 +1,4 @@
-[![What's Deployed](https://img.shields.io/badge/whatsdeployed-prod-green.svg)](https://whatsdeployed.io/s-58R)
+[![What's deployed on prod?](https://img.shields.io/badge/whatsdeployed-prod-green.svg)](https://whatsdeployed.io/s/58R)
 
 ## Local development
 
