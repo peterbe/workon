@@ -1,6 +1,6 @@
-import React from "react";
-import { observer } from "mobx-react";
 import { formatDistance } from "date-fns/esm";
+import { observer } from "mobx-react";
+import React from "react";
 
 import store from "./Store";
 
@@ -46,8 +46,8 @@ const Settings = observer(
             </small>{" "}
             <a
               href="https://whatsdeployed.io/s/58R"
-              target="_blank"
               rel="noopener noreferrer"
+              target="_blank"
             >
               Whatsdeployed?
             </a>
@@ -60,36 +60,34 @@ const Settings = observer(
 
 export default Settings;
 
-class DeleteItAll extends React.PureComponent {
-  state = { confirm: false };
+function DeleteItAll() {
+  const [confirm, setConfirm] = React.useState(false);
 
-  render() {
-    return (
-      <div className="box">
-        {this.state.confirm ? (
-          <h4 className="has-text-centered">
-            This will delete all items forever.
-          </h4>
-        ) : null}
-        <button
-          type="button"
-          className={
-            this.state.confirm
-              ? "button is-danger is-fullwidth"
-              : "button is-warning is-fullwidth"
+  return (
+    <div className="box">
+      {confirm ? (
+        <h4 className="has-text-centered">
+          This will delete all items forever.
+        </h4>
+      ) : null}
+      <button
+        className={
+          confirm
+            ? "button is-danger is-fullwidth"
+            : "button is-warning is-fullwidth"
+        }
+        onClick={event => {
+          if (confirm) {
+            store.todos.selfDestruct();
+            setConfirm(false);
+          } else {
+            setConfirm(true);
           }
-          onClick={event => {
-            if (this.state.confirm) {
-              store.todos.selfDestruct();
-              this.setState({ confirm: false });
-            } else {
-              this.setState({ confirm: true });
-            }
-          }}
-        >
-          {this.state.confirm ? "Are you certain?" : "Delete it All!"}
-        </button>
-      </div>
-    );
-  }
+        }}
+        type="button"
+      >
+        {confirm ? "Are you certain?" : "Delete it All!"}
+      </button>
+    </div>
+  );
 }

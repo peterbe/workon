@@ -274,29 +274,26 @@ const App = observer(
 
 export default App;
 
-class AuthLinkText extends React.PureComponent {
-  render() {
-    const { serverError, userInfo } = this.props;
-    let className = "badge is-badge-small";
-    let data = "";
-    let title = "";
-    if (serverError) {
-      className += " is-badge-danger";
-      data = "!";
-      title = "Authentication failed because of a server error";
-    } else if (userInfo) {
-      className += " is-badge-success";
-      title = `Logged in as ${store.user.userInfo.name}, ${
-        store.user.userInfo.email
-      }`;
-    } else {
-      className += " is-badge-warning";
-      title = "You are not logged in so no remote backups can be made.";
-    }
-    return (
-      <span className={className} data-badge={data} title={title}>
-        Authentication
-      </span>
-    );
+const AuthLinkText = React.memo(({ serverError, userInfo }) => {
+  let className = "badge is-badge-small";
+  let data = "";
+  let title = "";
+  if (serverError) {
+    className += " is-badge-danger";
+    data = "!";
+    title = "Authentication failed because of a server error";
+  } else if (userInfo) {
+    className += " is-badge-success";
+    title = `Logged in as ${store.user.userInfo.name}, ${
+      store.user.userInfo.email
+    }`;
+  } else {
+    className += " is-badge-warning";
+    title = "You are not logged in so no remote backups can be made.";
   }
-}
+  return (
+    <span className={className} data-badge={data} title={title}>
+      Authentication
+    </span>
+  );
+});

@@ -29,24 +29,19 @@ const SyncLog = observer(
 
 export default SyncLog;
 
-class ListAll extends React.PureComponent {
-  state = {};
-
-  render() {
-    const { items } = this.props;
-    if (!items.length) {
-      return <div>Nothing yet</div>;
-    }
-    return (
-      <div>
-        <h2 className="title">{items.length} Sync Attempts</h2>
-        {items.map((data, i) => (
-          <Log key={data._date} data={data} first={!i} />
-        ))}
-      </div>
-    );
+const ListAll = React.memo(({ items }) => {
+  if (!items.length) {
+    return <div>Nothing yet</div>;
   }
-}
+  return (
+    <div>
+      <h2 className="title">{items.length} Sync Attempts</h2>
+      {items.map((data, i) => (
+        <Log key={data._date} data={data} first={!i} />
+      ))}
+    </div>
+  );
+});
 
 class Log extends React.PureComponent {
   state = {

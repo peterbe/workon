@@ -61,26 +61,24 @@ const Auth = observer(
 
 export default Auth;
 
-class ShowServerError extends React.PureComponent {
-  render() {
-    return (
-      <div className="notification is-warning" style={{ margin: 30 }}>
-        <button className="delete" onClick={this.props.close} />
+function ShowServerError({ close, error }) {
+  return (
+    <div className="notification is-warning" style={{ margin: 30 }}>
+      <button className="delete" onClick={close} />
+      <p>
+        <b>Authentication Server Error</b>
+      </p>
+      <p>
+        Tried to authenticate (or fetch authentication information) and it
+        failed due to a server error.
+      </p>
+      {error.status ? (
         <p>
-          <b>Authentication Server Error</b>
+          Status code <code>{error.status}</code>
         </p>
-        <p>
-          Tried to authenticate (or fetch authentication information) and it
-          failed due to a server error.
-        </p>
-        {this.props.error.status ? (
-          <p>
-            Status code <code>{this.props.error.status}</code>
-          </p>
-        ) : (
-          <pre>{JSON.stringify(this.props.error)}</pre>
-        )}
-      </div>
-    );
-  }
+      ) : (
+        <pre>{JSON.stringify(error)}</pre>
+      )}
+    </div>
+  );
 }

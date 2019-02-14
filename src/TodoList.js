@@ -137,13 +137,13 @@ export default observer(
       this.playSound("jump");
     };
 
-    editItemText = (text, notes, item) => {
-      store.todos.editItemText(item, text, notes);
+    updateItem = (item, text, notes, context) => {
+      store.todos.updateItem(item, text, notes, context);
     };
 
-    editItemContext = (context, item) => {
-      store.todos.editItemContext(item, context);
-    };
+    // editItemContext = (context, item) => {
+    //   store.todos.editItemContext(item, context);
+    // };
 
     toggleEditItem = (item = null, advancedMode = false) => {
       this.setState({ startInAdvancedMode: advancedMode }, () => {
@@ -259,8 +259,7 @@ export default observer(
           {store.todos.editItem ? (
             <EditModal
               item={store.todos.editItem}
-              edit={this.editItemText}
-              move={this.editItemContext}
+              edit={this.updateItem}
               close={this.toggleEditItem}
               delete={this.deleteItem}
               done={this.doneItem}

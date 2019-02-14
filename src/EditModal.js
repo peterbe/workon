@@ -33,15 +33,12 @@ const getItemUrls = item => {
 };
 
 export default class EditModal extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      saveDisabled: true,
-      // advancedMode: !!this.props.startInAdvancedMode || this.props.item.notes,
-      advancedMode: true,
-      urls: getItemUrls(this.props.item)
-    };
-  }
+  state = {
+    saveDisabled: true,
+    advancedMode: true,
+    urls: getItemUrls(this.props.item),
+    newContext: null
+  };
 
   componentDidMount() {
     this.refs.text.focus();
@@ -70,12 +67,18 @@ export default class EditModal extends React.Component {
     const notes =
       (this.state.advancedMode && this.refs.notes.value.trim()) || null;
     if (text) {
-      this.props.edit(text, notes, this.props.item);
+      this.props.edit(this.props.item, text, notes, this.state.newContext);
       this.props.close();
     } else {
       this.props.delete(this.props.item);
       this.props.close();
     }
+  };
+
+  onChangeContext = context => {
+    this.setState({ newContext: context }, () => {
+      this.itemFormSave();
+    });
   };
 
   render() {
@@ -149,11 +152,7 @@ export default class EditModal extends React.Component {
             </form>
             {this.state.advancedMode && (
               <EditContextDropdown
-                onChangeContext={context => {
-                  this.props.move(context, this.props.item);
-                  this.itemFormSave();
-                  // this.props.close();
-                }}
+                onChangeContext={this.onChangeContext}
                 contextOptions={this.props.allContextOptions}
                 currentContext={item.context ? item.context : ""}
               />
@@ -243,8 +242,6 @@ export default class EditModal extends React.Component {
   }
 }
 
-// export default Settings;
-
 class EditContextDropdown extends React.PureComponent {
   state = {
     opened: false,
@@ -256,6 +253,7 @@ class EditContextDropdown extends React.PureComponent {
     this.props.onChangeContext(newContext);
   };
   render() {
+    const { contextOptions, currentContext, onChangeContext } = this.props;
     return (
       <form onSubmit={this.formSubmit} style={{ marginBottom: 4 }}>
         <div className={this.state.opened ? "dropdown is-active" : "dropdown"}>
@@ -286,19 +284,19 @@ class EditContextDropdown extends React.PureComponent {
           </div>
           <div className="dropdown-menu" id="dropdown-menu" role="menu">
             <div className="dropdown-content">
-              {this.props.contextOptions.map(context => {
+              {contextOptions.map(context => {
                 return (
                   <a
                     key={context.name}
                     href="/"
                     className={
-                      this.props.currentContext === context.name
+                      currentContext === context.name
                         ? "dropdown-item is-active"
                         : "dropdown-item"
                     }
                     onClick={event => {
                       event.preventDefault();
-                      this.props.onChangeContext(context.name);
+                      onChangeContext(context.name);
                     }}
                   >
                     {context.name ? (
@@ -334,7 +332,6 @@ class EditContextDropdown extends React.PureComponent {
                   placeholder="My new context name"
                   onChange={event => {
                     event.preventDefault();
-                    // this.setState({newContext: event.target.value})
                   }}
                   onBlur={event => {
                     console.log("New input blurred");

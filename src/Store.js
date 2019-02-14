@@ -125,11 +125,12 @@ class TodoStore {
             throw err;
           });
       }),
-      editItemText: action((item, text, notes) => {
+      updateItem: action((item, text, notes, context) => {
         const thisItemIndex = this.items.findIndex(i => i.id === item.id);
         const thisItem = this.items[thisItemIndex];
         thisItem.text = text;
         thisItem.notes = notes;
+        thisItem.context = context;
         thisItem.modified = new Date().getTime();
         this.items[thisItemIndex] = thisItem;
         this.collection
@@ -139,21 +140,6 @@ class TodoStore {
           })
           .then(() => {
             this.sync();
-          });
-      }),
-      editItemContext: action((item, context) => {
-        const thisItemIndex = this.items.findIndex(i => i.id === item.id);
-        const thisItem = this.items[thisItemIndex];
-        thisItem.context = context;
-        this.items[thisItemIndex] = thisItem;
-        this.collection
-          .update(this.cleanBeforeUpdating(thisItem))
-          .catch(err => {
-            throw err;
-          })
-          .then(() => {
-            this.sync();
-            // XXX opportunity to update list of all contexts
           });
       }),
       addItem: action(text => {
