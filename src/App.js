@@ -54,7 +54,7 @@ const App = observer(
       if (this.state.loading) {
         this.stopLoadingTimer = window.setTimeout(() => {
           this.setState({ loading: false });
-        }, 2000);
+        }, 1500);
       }
       sessionStorage.setItem("notFirstTime", true);
 
@@ -122,6 +122,7 @@ const App = observer(
         store.user.userInfo = authResult.idTokenPayload;
         store.todos.accessToken = authResult.accessToken;
         store.todos.sync();
+        store.todos.keepSyncing();
 
         const expiresAt = authResult.expiresIn * 1000 + new Date().getTime();
         if (authResult.state) {
@@ -275,20 +276,20 @@ const App = observer(
 export default App;
 
 const AuthLinkText = React.memo(({ serverError, userInfo }) => {
-  let className = "badge is-badge-small";
+  let className = "has-badge-small has-badge-rounded";
   let data = "";
   let title = "";
   if (serverError) {
-    className += " is-badge-danger";
+    className += " has-badge-danger";
     data = "!";
     title = "Authentication failed because of a server error";
   } else if (userInfo) {
-    className += " is-badge-success";
+    className += " has-badge-success";
     title = `Logged in as ${store.user.userInfo.name}, ${
       store.user.userInfo.email
     }`;
   } else {
-    className += " is-badge-warning";
+    className += " has-badge-warning";
     title = "You are not logged in so no remote backups can be made.";
   }
   return (

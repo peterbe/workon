@@ -4,6 +4,13 @@ import Kinto from "kinto";
 
 // configure({ enforceActions: true });
 
+// We don't do the automatic periodic background sync if it was
+// recently done (due to user action).
+const MIN_LAST_SYNC_AGE_MS = 2 * 1000;
+const KEEP_SYNCING_INTERVAL_MS = 10 * 1000;
+
+const MAX_SYNCLOGS_TO_KEEP = 30;
+
 class TodoStore {
   constructor(rootStore) {
     this.rootStore = rootStore;
@@ -35,6 +42,30 @@ class TodoStore {
           this.items = res.data;
         });
       }),
+      keepSyncing: action(() => {
+        this.periodicSyncTimer = setTimeout(() => {
+          let lastAnything = 0;
+          if (this.syncLog.lastFailure) {
+            lastAnything = this.syncLog.lastFailure;
+          }
+          if (
+            this.syncLog.lastSuccess &&
+            this.syncLog.lastSuccess > lastAnything
+          ) {
+            lastAnything = this.syncLog.lastSuccess;
+          }
+          const lastSyncAge = new Date().getTime() - lastAnything;
+          // The only reason NOT to sync is if it was done recently.
+          if (lastSyncAge > MIN_LAST_SYNC_AGE_MS) {
+            this.sync();
+          } else {
+            console.warn(
+              "Skipping periodic sync because it was done recently."
+            );
+          }
+          this.keepSyncing();
+        }, KEEP_SYNCING_INTERVAL_MS);
+      }),
       sync: action(() => {
         if (!this.accessToken) {
           console.warn("No accessToken, no remote sync.");
@@ -50,6 +81,7 @@ class TodoStore {
         this.collection
           .sync(syncOptions)
           .then(data => {
+            console.log("DATA:", data);
             if (data.ok) {
               this.syncLog.lastSuccess = new Date().getTime();
             } else {
@@ -57,6 +89,13 @@ class TodoStore {
             }
             data._date = new Date();
             this.syncLogs.push(data);
+            if (this.syncLogs.length >= MAX_SYNCLOGS_TO_KEEP) {
+              // Need to slice it down.
+              this.syncLogs = this.syncLogs.slice(
+                this.syncLogs.length - MAX_SYNCLOGS_TO_KEEP,
+                this.syncLogs.length
+              );
+            }
 
             if (data.conflicts.length) {
               console.warn(`There are ${data.conflicts.length} conflicts.`);

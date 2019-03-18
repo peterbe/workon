@@ -183,3 +183,12 @@ div.item p:before {
 /* div.item p.strikeout:before {
   content: "☑";
 } */
+
+
+/* This is my solution to:
+   https://github.com/derrickpelletier/react-loading-overlay/issues/33
+  Seems to work for now.
+   */
+div._loading_overlay_wrapper {
+  position: unset;
+}
