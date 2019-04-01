@@ -1,11 +1,11 @@
 /* This was generated using https://google-webfonts-helper.herokuapp.com/
    on Jan 22 2019 */
-/* hind-regular - latin */
+/* assistant-regular - latin */
 @font-face {
-  font-family: 'Hind';
+  font-family: 'Assistant';
   font-style: normal;
   font-weight: 400;
-  src: local('Hind Regular'), local('Hind-Regular'),
-       url('/fonts/hind-v8-latin-regular.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
-       url('/fonts/hind-v8-latin-regular.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+  src: local('Assistant'), local('Assistant-Regular'),
+       url('/fonts/assistant-v3-latin-regular.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
+       url('/fonts/assistant-v3-latin-regular.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
 }
