@@ -7,7 +7,7 @@ import Kinto from "kinto";
 // We don't do the automatic periodic background sync if it was
 // recently done (due to user action).
 const MIN_LAST_SYNC_AGE_MS = 2 * 1000;
-const KEEP_SYNCING_INTERVAL_MS = 10 * 1000;
+const KEEP_SYNCING_INTERVAL_MS = 15 * 1000;
 
 const MAX_SYNCLOGS_TO_KEEP = 30;
 
@@ -81,7 +81,7 @@ class TodoStore {
         this.collection
           .sync(syncOptions)
           .then(data => {
-            console.log("DATA:", data);
+            // console.log("DATA:", data);
             if (data.ok) {
               this.syncLog.lastSuccess = new Date().getTime();
             } else {
