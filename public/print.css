@@ -3,6 +3,8 @@ input,
 .sync-log-summary,
 .item .is-pulled-right,
 div.columns.buttons,
+div.tabs,
+button.is-fullwidth,
 .pin-toggle {
   display: none;
 }
@@ -17,4 +19,20 @@ input {
 }
 .box {
   margin: unset;
+}
+
+.box h1 {
+  font-size: 300%;
+}
+
+.box div.item {
+  font-size: 17px;
+  padding-top: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #999;
+  page-break-inside: avoid; /* https://stackoverflow.com/a/907719/205832 */
+}
+.box div.item p.metadata {
+  opacity: 1;
+  font-size: 13px;
 }
