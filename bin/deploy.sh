@@ -11,4 +11,6 @@ INLINE_RUNTIME_CHUNK=false REACT_APP_KINTO_URL=https://kinto.workon.app/v1 yarn 
 
 ./bin/insert_version.js build/version.json build/index.html
 
+./bin/move_print_css_last.js build/index.html
+
 gh-pages --add --dist build/

@@ -340,7 +340,7 @@ export default observer(
           </div>
 
           {showItems.length ? (
-            <div className="columns">
+            <div className="columns buttons">
               <div className="column">
                 <button
                   className="button is-info is-fullwidth"
@@ -430,7 +430,7 @@ const ShowSyncLog = observer(
     };
     render() {
       return (
-        <p className="has-text-centered">
+        <p className="has-text-centered sync-log-summary">
           {this.subRender(store.todos.syncLog)}
         </p>
       );
