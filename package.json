@@ -6,9 +6,6 @@
   "license": "MIT",
   "dependencies": {
     "@babel/core": "7.5.4",
-    "@fortawesome/fontawesome-svg-core": "1.2.19",
-    "@fortawesome/free-solid-svg-icons": "5.9.0",
-    "@fortawesome/react-fontawesome": "0.1.4",
     "audio-loader": "1.0.3",
     "audio-play": "2.2.1",
     "auth0-js": "9.11.2",
@@ -27,6 +24,7 @@
     "mobx-react": "6.1.1",
     "react": "16.8.6",
     "react-dom": "16.8.6",
+    "react-icons": "3.7.0",
     "react-linkify": "0.2.2",
     "react-loading-overlay": "1.0.1",
     "react-router-dom": "5.0.1",

@@ -1,11 +1,5 @@
 import React from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faAngleDown,
-  faAngleUp,
-  faCheck,
-  faUndo
-} from "@fortawesome/free-solid-svg-icons";
+import { FaAngleDown, FaAngleUp, FaCheck, FaUndo } from "react-icons/fa";
 import getUrls from "./vendored/get-urls";
 import { toDate, formatDistance } from "date-fns/esm";
 
@@ -105,10 +99,7 @@ export default class EditModal extends React.Component {
                     this.props.done(item);
                   }}
                 >
-                  {/* <span role="img" aria-label="Toggle done">
-                    ✔️
-                  </span> */}
-                  <FontAwesomeIcon icon={item.done ? faUndo : faCheck} />{" "}
+                  {item.done ? <FaUndo /> : <FaCheck />}{" "}
                   {item.done ? "UNDONE!" : "DONE!"}
                 </button>
               </div>
@@ -273,13 +264,10 @@ class EditContextDropdown extends React.PureComponent {
                 });
               }}
             >
-              <span>
+              <span style={{ marginRight: 10 }}>
                 {this.state.opened ? "Close" : "Move to a different context"}
               </span>
-              <FontAwesomeIcon
-                icon={this.state.opened ? faAngleUp : faAngleDown}
-                style={{ marginLeft: 10 }}
-              />
+              {this.state.opened ? <FaAngleUp /> : <FaAngleDown />}
             </button>
           </div>
           <div className="dropdown-menu" id="dropdown-menu" role="menu">
