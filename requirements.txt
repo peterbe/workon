@@ -1,2 +1,2 @@
-kinto[postgresql]==9.2.2
+kinto[postgresql]==13.6.5
 python-memcached==1.59
