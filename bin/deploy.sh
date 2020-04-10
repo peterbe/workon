@@ -14,4 +14,4 @@ time brotli static/css/*.css
 popd
 apack build.zip build
 
-scp build.zip django@192.34.57.223:/home/django/workon/
+scp build.zip django@68.183.151.74:/home/django/workon/
