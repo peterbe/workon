@@ -2268,7 +2268,7 @@ atob@^2.1.1, atob@^2.1.2:
   resolved "https://registry.yarnpkg.com/atob/-/atob-2.1.2.tgz#6d9517eb9e030d2436666651e86bd9f6f13533c9"
   integrity sha512-Wm6ukoaOGJi/73p/cl2GvLjTI5JM1k/O14isD73YML8StrH/7/lRFgmg8nICZgD3bZZvjwCGxtMOD3wWNAu8cg==
 
-audio-buffer-from@^1.1.1:
+audio-buffer-from@^1.0.0, audio-buffer-from@^1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/audio-buffer-from/-/audio-buffer-from-1.1.1.tgz#6ba1dd0d463ce19e7ba19f91f5e1f725178d38d8"
   integrity sha512-8Wcira24z+26GXDFe7ZFRF1bJm1iWrz8O+XL8iNZxZjxqAPXIoK1IrJiOqStv35ASPbRjG57ZK/T0WO92MDUSg==
@@ -2308,6 +2308,19 @@ audio-buffer-utils@^4.1.1, audio-buffer-utils@^4.3.0:
     negative-index "^1.0.2"
     typedarray-methods "^1.0.0"
 
+audio-buffer-utils@^5.1.2:
+  version "5.1.2"
+  resolved "https://registry.yarnpkg.com/audio-buffer-utils/-/audio-buffer-utils-5.1.2.tgz#8cd40d86ec7dc0b4574ffd88d3349545fbb535b4"
+  integrity sha512-MZEnf8PLnnSwIySffyxG3Q33PwlKHH4r66FZMPUJMDLAtGt8OblzoLcxHInlGZmDqRt1MxYG0Eovn0CpHKsqzg==
+  dependencies:
+    audio-buffer "^4.0.0"
+    audio-buffer-from "^1.0.0"
+    audio-context "^1.0.0"
+    clamp "^1.0.1"
+    is-audio-buffer "^1.0.8"
+    is-browser "^2.0.1"
+    is-buffer "^2.0.0"
+
 audio-buffer@^2.4.5:
   version "2.4.6"
   resolved "https://registry.yarnpkg.com/audio-buffer/-/audio-buffer-2.4.6.tgz#2f97bdb2bb9ca46d22d3b01d4334f49924eba260"
@@ -2331,7 +2344,7 @@ audio-buffer@^3.0.0, audio-buffer@^3.1.1:
     is-buffer "^1.1.0"
     is-plain-obj "^1.1.0"
 
-audio-buffer@^4.0.1, audio-buffer@^4.0.4:
+audio-buffer@^4.0.0, audio-buffer@^4.0.1, audio-buffer@^4.0.4:
   version "4.0.4"
   resolved "https://registry.yarnpkg.com/audio-buffer/-/audio-buffer-4.0.4.tgz#cdb03855a951a1c2931ac1e7b00a9d9d3a4d4858"
   integrity sha512-phH+MR3G+N/PO5ZKKxx7HlU6vJwAJFa0+FCaTjr/4lUZU/RCjUTqlk3nMJTRy5+b+6cbx8m//EtwZOVI5Ht9+w==
@@ -2384,12 +2397,13 @@ audio-loader@1.0.3:
     object-assign "^4.1.1"
     request "^2.74.0"
 
-audio-play@2.2.1:
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/audio-play/-/audio-play-2.2.1.tgz#77ffc5556e228346d524dff1553e84ffe47b4317"
-  integrity sha512-14lXaPyaddp6hWQdmvOUffPU2Hiqpfmrw3FiG4Q0brVgZ5gZwB1d32/m93iOnTIGcYsv8HTTZdGwl2+IXGUcpA==
+audio-play@2.3.1:
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/audio-play/-/audio-play-2.3.1.tgz#5e001820aed640f7dad5daa8eaaba72a3430bf00"
+  integrity sha512-TjqdAupN+dm6tGjxRXO7N0EsauKWlGe8+4fHL724ilvzNVJ6WcgblonNktnI4R/ClTaEUijm2sUZrBJz/lSBDw==
   dependencies:
     audio-buffer "^4.0.1"
+    audio-buffer-utils "^5.1.2"
     audio-context "^1.0.1"
     audio-source "^1.0.0"
     audio-speaker "^1.4.0"
@@ -6127,6 +6141,11 @@ is-buffer@^1.0.2, is-buffer@^1.1.0, is-buffer@^1.1.4, is-buffer@^1.1.5:
   version "1.1.6"
   resolved "https://registry.yarnpkg.com/is-buffer/-/is-buffer-1.1.6.tgz#efaa2ea9daa0d7ab2ea13a97b2b8ad51fefbe8be"
   integrity sha512-NcdALwpXkTm5Zvvbk7owOUSvVvBKDgKP5/ewfXEznmQFfs4ZRmanOeKBTjRVjka3QFoN6XJ+9F3USqfHqTaU5w==
+
+is-buffer@^2.0.0:
+  version "2.0.5"
+  resolved "https://registry.yarnpkg.com/is-buffer/-/is-buffer-2.0.5.tgz#ebc252e400d22ff8d77fa09888821a24a658c191"
+  integrity sha512-i2R6zNFDwgEHJyQUtJEk0XFi1i0dPFn/oqjK3/vPCcDeJvW5NQ83V8QbicfF1SupOaB0h8ntgBC2YiE7dfyctQ==
 
 is-callable@^1.1.4:
   version "1.1.4"
