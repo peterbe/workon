@@ -1,4 +1,4 @@
-import { formatDistance } from "date-fns/esm";
+import { formatDistance, parseISO } from "date-fns/esm";
 import { observer } from "mobx-react";
 import React from "react";
 
@@ -39,8 +39,8 @@ const Settings = observer(
             </a>{" "}
             <small>
               (
-              {formatDistance(data.date, new Date(), {
-                addSuffix: true
+              {formatDistance(parseISO(data.date), new Date(), {
+                addSuffix: true,
               })}
               )
             </small>{" "}
@@ -76,7 +76,7 @@ function DeleteItAll() {
             ? "button is-danger is-fullwidth"
             : "button is-warning is-fullwidth"
         }
-        onClick={event => {
+        onClick={(event) => {
           if (confirm) {
             store.todos.selfDestruct();
             setConfirm(false);

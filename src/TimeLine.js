@@ -9,7 +9,7 @@ import {
   subDays,
   startOfDay,
   startOfMonth,
-  isEqual
+  isEqual,
 } from "date-fns/esm";
 
 const TimeLine = observer(
@@ -23,16 +23,16 @@ const TimeLine = observer(
     }
 
     render() {
-      const doneItems = store.todos.items.filter(item => item.done);
+      const doneItems = store.todos.items.filter((item) => item.done);
       const groups = {};
-      doneItems.reverse().forEach(item => {
+      doneItems.reverse().forEach((item) => {
         const date = startOfDay(item.done).getTime();
         if (!groups[date]) {
           groups[date] = [];
         }
         groups[date].push(item);
       });
-      const dates = Object.keys(groups).map(d => parseInt(d, 10));
+      const dates = Object.keys(groups).map((d) => parseInt(d, 10));
       dates.sort((a, b) => a - b);
       let previousMonth = null;
       return (
@@ -45,7 +45,7 @@ const TimeLine = observer(
             <div className="timeline-item">
               <div className="timeline-content" />
             </div>
-            {dates.map(date => {
+            {dates.map((date) => {
               const items = groups[date];
               const month = startOfMonth(date);
               let monthHeader = null;
@@ -65,9 +65,11 @@ const TimeLine = observer(
                   <div className="timeline-marker" />
                   <div className="timeline-content">
                     <p className="heading">{FriendlyDate(date)}</p>
-                    {items.map(item => <p key={item.id}>{item.text}</p>)}
+                    {items.map((item) => (
+                      <p key={item.id}>{item.text}</p>
+                    ))}
                   </div>
-                </div>
+                </div>,
               ];
             })}
             <div className="timeline-header">
@@ -82,7 +84,7 @@ const TimeLine = observer(
 
 export default TimeLine;
 
-const FriendlyDate = datetime => {
+const FriendlyDate = (datetime) => {
   const now = new Date();
   let text;
   if (isSameDay(now, datetime)) {
@@ -90,7 +92,7 @@ const FriendlyDate = datetime => {
   } else if (isSameDay(datetime, subDays(now, 1))) {
     text = "Yesterday";
   } else {
-    text = format(datetime, "D MMM YYYY");
+    text = format(datetime, "d MMM yyyy");
   }
   return text;
 };
