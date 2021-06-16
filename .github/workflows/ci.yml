@@ -12,28 +12,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # - name: Configure sysctl limits
-      #   run: |
-      #     sudo swapoff -a
-      #     sudo sysctl -w vm.swappiness=1
-      #     sudo sysctl -w fs.file-max=262144
-      #     sudo sysctl -w vm.max_map_count=262144
-
-      # - uses: getong/elasticsearch-action@v1.2
-      #   with:
-      #     elasticsearch version: '7.7.0'
-      #     host port: 9200
-      #     container port: 9200
-      #     host node port: 9300
-      #     node port: 9300
-      #     discovery type: 'single-node'
-
-      # - name: Redis Server in GitHub Actions
-      #   uses: supercharge/redis-github-action@1.1.0
-      #   with:
-      #     # Redis version to use
-      #     redis-version: '5.0.5'
-
       - name: Setup PostgreSQL
         uses: Harmon758/postgresql-action@v1.0.0
         with:
@@ -73,15 +51,14 @@ jobs:
         run: |
           python -m pip install --upgrade pip wheel --progress-bar off
           pip install -r requirements.txt --progress-bar off
-      - name: Run Tests
+      - name: Build client
+        run: |
+          yarn build
+      - name: Run Kinto
         env:
           KINTO_STORAGE_URL: postgresql://user:secret@localhost/workon
           KINTO_CACHE_URL: postgresql://user:secret@localhost/workon
           KINTO_PERMISSION_URL: postgresql://user:secret@localhost/workon
         run: |
-          yarn build
-          kinto start --ini kinto.ini
-      #     ./scripts/ci-test.sh
-      # - name: Run Lints
-      #   run: |
-      #     ./scripts/ci-lint.sh
+          kinto start --ini kinto.ini &
+          curl --retry-connrefused --retry 5 http://localhost:8888/v1/ > /dev/null
