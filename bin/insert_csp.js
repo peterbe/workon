@@ -6,7 +6,7 @@ const CSP_TEMPLATE = `
 default-src 'none';
 connect-src 'self' kinto.workon.app peterbecom.auth0.com;
 frame-src peterbecom.auth0.com;
-img-src 'self' avatars2.githubusercontent.com https://*.googleusercontent.com;
+img-src 'self' https://avatars*.githubusercontent.com https://*.googleusercontent.com;
 script-src 'self'%SCRIPT_HASHES%;
 style-src 'self' 'unsafe-inline';
 font-src 'self' data:;
@@ -21,7 +21,7 @@ let hashes = "";
 let csp = CSP_TEMPLATE;
 const matches = html.match(/<script>.*<\/script>/g);
 if (matches) {
-  matches.forEach(scriptTag => {
+  matches.forEach((scriptTag) => {
     const hash = crypto.createHash("sha256");
     hash.update(scriptTag.replace(/<script>/, "").replace("</script>", ""));
     const digest = hash.digest("hex");

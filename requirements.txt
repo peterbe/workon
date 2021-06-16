@@ -1,1 +1,2 @@
-kinto[postgresql]==13.6.5
+#kinto[postgresql]==13.6.5
+kinto[postgresql]
