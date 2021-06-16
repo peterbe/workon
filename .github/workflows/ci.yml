@@ -74,8 +74,14 @@ jobs:
           python -m pip install --upgrade pip wheel --progress-bar off
           pip install -r requirements.txt --progress-bar off
       - name: Run Tests
+        env:
+          KINTO_STORAGE_URL: postgresql://user@secret:localhost/workon
+          KINTO_CACHE_URL: postgresql://user@secret:localhost/workon
+          KINTO_PERMISSION_URL: postgresql://user@secret:localhost/workon
         run: |
           yarn build
+          KINTO_STORAGE_URL
+          kinto start --ini kinto.ini
       #     ./scripts/ci-test.sh
       # - name: Run Lints
       #   run: |
