@@ -75,9 +75,9 @@ jobs:
           pip install -r requirements.txt --progress-bar off
       - name: Run Tests
         env:
-          KINTO_STORAGE_URL: postgresql://user@secret:localhost/workon
-          KINTO_CACHE_URL: postgresql://user@secret:localhost/workon
-          KINTO_PERMISSION_URL: postgresql://user@secret:localhost/workon
+          KINTO_STORAGE_URL: postgresql://user:secret@localhost/workon
+          KINTO_CACHE_URL: postgresql://user:secret@localhost/workon
+          KINTO_PERMISSION_URL: postgresql://user:secret@localhost/workon
         run: |
           yarn build
           kinto start --ini kinto.ini
