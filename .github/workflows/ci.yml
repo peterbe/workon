@@ -80,7 +80,6 @@ jobs:
           KINTO_PERMISSION_URL: postgresql://user@secret:localhost/workon
         run: |
           yarn build
-          KINTO_STORAGE_URL
           kinto start --ini kinto.ini
       #     ./scripts/ci-test.sh
       # - name: Run Lints
