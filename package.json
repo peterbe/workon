@@ -15,7 +15,7 @@
     "bulma-toast": "1.5.4",
     "core-js": "3.6.1",
     "csshake": "1.5.3",
-    "date-fns": "2.8.1",
+    "date-fns": "2.23.0",
     "get-urls": "9.2.0",
     "gh-pages": "3.2.3",
     "kinto": "12.7.0",
