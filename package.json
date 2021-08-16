@@ -22,7 +22,7 @@
     "kinto-http": "4.7.3",
     "mobx": "5.15.1",
     "mobx-react": "6.1.4",
-    "react": "16.12.0",
+    "react": "16.14.0",
     "react-dom": "16.13.0",
     "react-icons": "3.8.0",
     "react-linkify": "1.0.0-alpha",
