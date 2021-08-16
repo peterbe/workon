@@ -21,7 +21,7 @@
     "kinto": "12.7.0",
     "kinto-http": "4.7.3",
     "mobx": "5.15.1",
-    "mobx-react": "6.1.4",
+    "mobx-react": "6.1.5",
     "react": "16.12.0",
     "react-dom": "16.13.0",
     "react-icons": "3.8.0",
