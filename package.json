@@ -8,7 +8,7 @@
     "@babel/core": "7.14.8",
     "audio-loader": "1.0.3",
     "audio-play": "2.3.1",
-    "auth0-js": "9.16.2",
+    "auth0-js": "9.17.0",
     "bulma": "0.9.3",
     "bulma-badge": "3.0.1",
     "bulma-timeline": "3.0.4",
