@@ -5,7 +5,7 @@
   "author": "Peter Bengtsson",
   "license": "MIT",
   "dependencies": {
-    "@babel/core": "7.14.8",
+    "@babel/core": "7.16.7",
     "audio-loader": "1.0.3",
     "audio-play": "2.3.1",
     "auth0-js": "9.16.2",
