@@ -13,7 +13,7 @@
     "bulma-badge": "3.0.1",
     "bulma-timeline": "3.0.4",
     "bulma-toast": "1.5.4",
-    "core-js": "3.6.1",
+    "core-js": "3.24.1",
     "csshake": "1.5.3",
     "date-fns": "2.23.0",
     "get-urls": "9.2.0",
